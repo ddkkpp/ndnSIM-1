@@ -119,7 +119,7 @@ Producer::OnInterest(shared_ptr<const Interest> interest)
   const ndn::Buffer x(m_virtualPayloadSize);
   std::generate_n(x.begin(), m_virtualPayloadSize, gen_rand());
   shared_ptr<const Buffer> xx=make_shared< const ::ndn::Buffer>(x);
-  data->setContent(xx);
+  //data->setContent(xx);
   // data->setContent(make_shared< const ::ndn::Buffer>(x));
   //data->setContent(make_shared< ::ndn::Buffer>(m_virtualPayloadSize));//原始代码中：buffer是全0的vector
 
