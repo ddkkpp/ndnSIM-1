@@ -105,23 +105,23 @@ Producer::OnInterest(shared_ptr<const Interest> interest)
   // dataName.appendVersion();
   
   //修改下面代码以使得每次生成的data中，随机化content中的buffer
-  auto data = make_shared<Data>();
-  data->setName(dataName);
-  data->setFreshnessPeriod(::ndn::time::milliseconds(m_freshness.GetMilliSeconds()));
-  struct gen_rand { 
-      uint8_t range;          
-  public: 
-      gen_rand(uint8_t r=1) : range(r) {}
-      double operator()() { 
-          return ((uint8_t)rand()) * range;
-      }
-  };
-  const ndn::Buffer x(m_virtualPayloadSize);
-  std::generate_n(x.begin(), m_virtualPayloadSize, gen_rand());
-  shared_ptr<const Buffer> xx=make_shared< const ::ndn::Buffer>(x);
+  // auto data = make_shared<Data>();
+  // data->setName(dataName);
+  // data->setFreshnessPeriod(::ndn::time::milliseconds(m_freshness.GetMilliSeconds()));
+  // struct gen_rand { 
+  //     uint8_t range;          
+  // public: 
+  //     gen_rand(uint8_t r=1) : range(r) {}
+  //     double operator()() { 
+  //         return ((uint8_t)rand()) * range;
+  //     }
+  // };
+  // const ::ndn::Buffer x(m_virtualPayloadSize);
+  // std::generate_n(x.begin(), m_virtualPayloadSize, gen_rand());
+  //shared_ptr<const ::ndn::Buffer> xx=make_shared< const ::ndn::Buffer>(x);
   //data->setContent(xx);
   // data->setContent(make_shared< const ::ndn::Buffer>(x));
-  //data->setContent(make_shared< ::ndn::Buffer>(m_virtualPayloadSize));//原始代码中：buffer是全0的vector
+  data->setContent(make_shared< ::ndn::Buffer>(m_virtualPayloadSize));//原始代码中：buffer是全0的vector
 
   Signature signature;
   SignatureInfo signatureInfo(static_cast< ::ndn::tlv::SignatureTypeValue>(255));
