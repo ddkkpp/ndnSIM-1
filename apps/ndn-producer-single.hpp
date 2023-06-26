@@ -17,17 +17,18 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef NDN_PRODUCER_H
-#define NDN_PRODUCER_H
+#ifndef NDN_PRODUCER_SINGLE_H
+#define NDN_PRODUCER_SINGLE_H
 
 #include "ns3/ndnSIM/model/ndn-common.hpp"
 
 #include "ndn-app.hpp"
+#include "ndn-producer.hpp"//别忘了
 #include "ns3/ndnSIM/model/ndn-common.hpp"
 
 #include "ns3/nstime.h"
 #include "ns3/ptr.h"
-#include <vector>
+
 
 namespace ns3 {
 namespace ndn {
@@ -41,33 +42,21 @@ namespace ndn {
  * size and name same as in Interest.cation, which replying every incoming Interest
  * with Data packet with a specified size and name same as in Interest.
  */
-class Producer : public App {
+class ProducerSingle : public Producer {
 public:
   static TypeId
   GetTypeId(void);
 
-  Producer();
 
-  // inherited from NdnApp
+
+
   virtual void
   OnInterest(shared_ptr<const Interest> interest);
 
-protected:
-  // inherited from Application base class.
   virtual void
-  StartApplication(); // Called at time specified by Start
-
-  virtual void
-  StopApplication(); // Called at time specified by Stop
-
-private:
-  Name m_prefix;
-  Name m_postfix;
-  uint32_t m_virtualPayloadSize;
-  Time m_freshness;
-
-  uint32_t m_signature;
-  Name m_keyLocator;
+  OnInterest1(shared_ptr<const Interest> interest);
+ 
+  double m_honesty;
 };
 
 } // namespace ndn

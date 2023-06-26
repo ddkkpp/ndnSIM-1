@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "*.ipp": "cpp",
+        "chrono": "cpp",
+        "hash_map": "cpp",
+        "*.tcc": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "functional": "cpp",
+        "cmath": "cpp",
+        "complex": "cpp"
+    }
+}

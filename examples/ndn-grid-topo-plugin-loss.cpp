@@ -63,7 +63,7 @@ main(int argc, char* argv[])
   ndn::StackHelper ndnHelper;
   ndnHelper.InstallAll();
 
-  ndn::StrategyChoiceHelper::InstallAll("/", "ndn:/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll("/", "ndn:/localhost/nfd/strategy/best-route/%FD%01");
 
   // Installing global routing interface on all nodes
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
@@ -93,6 +93,7 @@ main(int argc, char* argv[])
   // Calculate and install FIBs
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
+  ndn::AppDelayTracer::InstallAll("app-delays-trace1.txt");
   Simulator::Stop(Seconds(20.0));
 
   Simulator::Run();

@@ -19,45 +19,46 @@
  * @author Xiaoke Jiang <shock.jiang@gmail.com>
  **/
 
-#include "ndn-consumer-zipf-mandelbrot.hpp"
+#include "ndn-consumer-zipf-fdbk.hpp"
+
 
 #include <math.h>
 
-NS_LOG_COMPONENT_DEFINE("ndn.ConsumerZipfMandelbrot");
+NS_LOG_COMPONENT_DEFINE("ndn.ConsumerZipfFdbk");
 
 namespace ns3 {
 namespace ndn {
 
-NS_OBJECT_ENSURE_REGISTERED(ConsumerZipfMandelbrot);
+NS_OBJECT_ENSURE_REGISTERED(ConsumerZipfFdbk);
 
 TypeId
-ConsumerZipfMandelbrot::GetTypeId(void)
+ConsumerZipfFdbk::GetTypeId(void)
 {
   static TypeId tid =
-    TypeId("ns3::ndn::ConsumerZipfMandelbrot")
+    TypeId("ns3::ndn::ConsumerZipfFdbk")
       .SetGroupName("Ndn")
       .SetParent<ConsumerCbr>()
-      .AddConstructor<ConsumerZipfMandelbrot>()
+      .AddConstructor<ConsumerZipfFdbk>()
 
       .AddAttribute("NumberOfContents", "Number of the Contents in total", StringValue("100"),
-                    MakeUintegerAccessor(&ConsumerZipfMandelbrot::SetNumberOfContents,
-                                         &ConsumerZipfMandelbrot::GetNumberOfContents),
+                    MakeUintegerAccessor(&ConsumerZipfFdbk::SetNumberOfContents,
+                                         &ConsumerZipfFdbk::GetNumberOfContents),
                     MakeUintegerChecker<uint32_t>())
 
       .AddAttribute("q", "parameter of improve rank", StringValue("0.7"),
-                    MakeDoubleAccessor(&ConsumerZipfMandelbrot::SetQ,
-                                       &ConsumerZipfMandelbrot::GetQ),
+                    MakeDoubleAccessor(&ConsumerZipfFdbk::SetQ,
+                                       &ConsumerZipfFdbk::GetQ),
                     MakeDoubleChecker<double>())
 
       .AddAttribute("s", "parameter of power", StringValue("0.7"),
-                    MakeDoubleAccessor(&ConsumerZipfMandelbrot::SetS,
-                                       &ConsumerZipfMandelbrot::GetS),
+                    MakeDoubleAccessor(&ConsumerZipfFdbk::SetS,
+                                       &ConsumerZipfFdbk::GetS),
                     MakeDoubleChecker<double>());
 
   return tid;
 }
 
-ConsumerZipfMandelbrot::ConsumerZipfMandelbrot()
+ConsumerZipfFdbk::ConsumerZipfFdbk()
   : m_N(100) // needed here to make sure when SetQ/SetS are called, there is a valid value of N
   , m_q(0.7)
   , m_s(0.7)
@@ -66,12 +67,25 @@ ConsumerZipfMandelbrot::ConsumerZipfMandelbrot()
   // SetNumberOfContents is called by NS-3 object system during the initialization
 }
 
-ConsumerZipfMandelbrot::~ConsumerZipfMandelbrot()
+ConsumerZipfFdbk::~ConsumerZipfFdbk()
 {
 }
 
+
 void
-ConsumerZipfMandelbrot::SetNumberOfContents(uint32_t numOfContents)
+ConsumerZipfFdbk::OnData(shared_ptr<const Data> data)
+{
+  Consumer::OnData(data);
+  feedback_name=data->getName();
+  feedback_content=data->getContent();
+  if(data->getSignature().getValue()==std::numeric_limits<uint32_t>::max())//data为假
+  {
+      SendFeedback();
+  }
+}
+
+void
+ConsumerZipfFdbk::SetNumberOfContents(uint32_t numOfContents)
 {
   m_N = numOfContents;
 
@@ -91,39 +105,62 @@ ConsumerZipfMandelbrot::SetNumberOfContents(uint32_t numOfContents)
 }
 
 uint32_t
-ConsumerZipfMandelbrot::GetNumberOfContents() const
+ConsumerZipfFdbk::GetNumberOfContents() const
 {
   return m_N;
 }
 
 void
-ConsumerZipfMandelbrot::SetQ(double q)
+ConsumerZipfFdbk::SetQ(double q)
 {
   m_q = q;
   SetNumberOfContents(m_N);
 }
 
 double
-ConsumerZipfMandelbrot::GetQ() const
+ConsumerZipfFdbk::GetQ() const
 {
   return m_q;
 }
 
 void
-ConsumerZipfMandelbrot::SetS(double s)
+ConsumerZipfFdbk::SetS(double s)
 {
   m_s = s;
   SetNumberOfContents(m_N);
 }
 
 double
-ConsumerZipfMandelbrot::GetS() const
+ConsumerZipfFdbk::GetS() const
 {
   return m_s;
 }
 
 void
-ConsumerZipfMandelbrot::SendPacket()
+ConsumerZipfFdbk::SendFeedback()
+{
+  if (!m_active)
+    return;
+
+  NS_LOG_FUNCTION_NOARGS();
+
+  shared_ptr<Interest> feedback = make_shared<Interest>();
+  feedback->setName(feedback_name);
+  feedback->setApplicationParameters(feedback_content);
+  feedback->setNonce(std::numeric_limits<uint32_t>::max());//feedback的nouce设置为max
+
+  // NS_LOG_INFO ("Requesting Feedback: \n" << *interest);
+  NS_LOG_INFO("> Feedback for " << feedback_name << ", face: " << m_face->getId());
+
+
+  m_transmittedInterests(feedback, this, m_face);
+  m_appLink->onReceiveInterest(*feedback);
+
+  // ConsumerZipfFdbk::ScheduleNextPacket();
+}
+
+void
+ConsumerZipfFdbk::SendPacket()
 {
   if (!m_active)
     return;
@@ -159,7 +196,7 @@ ConsumerZipfMandelbrot::SendPacket()
       }
     }
 
-    seq = ConsumerZipfMandelbrot::GetNextSeq();
+    seq = ConsumerZipfFdbk::GetNextSeq();
     m_seq++;
   }
 
@@ -171,7 +208,7 @@ ConsumerZipfMandelbrot::SendPacket()
   //
 
   shared_ptr<Interest> interest = make_shared<Interest>();
-  interest->setNonce(m_rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
+  interest->setNonce(m_rand->GetValue(0, std::numeric_limits<uint32_t>::max()-1));
   interest->setName(*nameWithSequence);
 
   // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
@@ -192,11 +229,11 @@ ConsumerZipfMandelbrot::SendPacket()
   m_transmittedInterests(interest, this, m_face);
   m_appLink->onReceiveInterest(*interest);
 
-  ConsumerZipfMandelbrot::ScheduleNextPacket();
+  ConsumerZipfFdbk::ScheduleNextPacket();
 }
 
 uint32_t
-ConsumerZipfMandelbrot::GetNextSeq()
+ConsumerZipfFdbk::GetNextSeq()
 {
   uint32_t content_index = 1; //[1, m_N]
   double p_sum = 0;
@@ -221,17 +258,17 @@ ConsumerZipfMandelbrot::GetNextSeq()
 }
 
 void
-ConsumerZipfMandelbrot::ScheduleNextPacket()
+ConsumerZipfFdbk::ScheduleNextPacket()
 {
 
   if (m_firstTime) {
-    m_sendEvent = Simulator::Schedule(Seconds(0.0), &ConsumerZipfMandelbrot::SendPacket, this);
+    m_sendEvent = Simulator::Schedule(Seconds(0.0), &ConsumerZipfFdbk::SendPacket, this);
     m_firstTime = false;
   }
   else if (!m_sendEvent.IsRunning())
     m_sendEvent = Simulator::Schedule((m_random == 0) ? Seconds(1.0 / m_frequency)
                                                       : Seconds(m_random->GetValue()),
-                                      &ConsumerZipfMandelbrot::SendPacket, this);
+                                      &ConsumerZipfFdbk::SendPacket, this);
 }
 
 } /* namespace ndn */

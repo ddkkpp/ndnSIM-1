@@ -95,7 +95,7 @@ main(int argc, char* argv[])
 
   // Install different forwarding strategies for prefix1, prefix2
   StrategyChoiceHelper::InstallAll(prefix1, "/localhost/nfd/strategy/multicast");
-  StrategyChoiceHelper::InstallAll(prefix2, "/localhost/nfd/strategy/best-route");
+  StrategyChoiceHelper::InstallAll(prefix2, "/localhost/nfd/strategy/best-route/%FD%01");
 
   // Install NDN applications
   AppHelper consumerHelper("ns3::ndn::ConsumerCbr");
@@ -120,6 +120,8 @@ main(int argc, char* argv[])
 
   // Calculate and install FIBs
   GlobalRoutingHelper::CalculateRoutes();
+
+  ns3::ndn::AppDelayTracer::InstallAll("app-delays-trace1.txt");
 
   Simulator::Stop(Seconds(20.0));
   Simulator::Run();

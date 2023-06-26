@@ -17,17 +17,19 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef NDN_PRODUCER_H
-#define NDN_PRODUCER_H
+#ifndef NDN_PRODUCER_REP_H
+#define NDN_PRODUCER_REP_H
 
 #include "ns3/ndnSIM/model/ndn-common.hpp"
 
 #include "ndn-app.hpp"
+#include "ndn-producer.hpp"//别忘了
 #include "ns3/ndnSIM/model/ndn-common.hpp"
 
 #include "ns3/nstime.h"
 #include "ns3/ptr.h"
-#include <vector>
+
+#include "ns3/watchdog.h"
 
 namespace ns3 {
 namespace ndn {
@@ -41,33 +43,37 @@ namespace ndn {
  * size and name same as in Interest.cation, which replying every incoming Interest
  * with Data packet with a specified size and name same as in Interest.
  */
-class Producer : public App {
+class ProducerRep : public Producer {
 public:
   static TypeId
   GetTypeId(void);
 
-  Producer();
+  ProducerRep();
 
-  // inherited from NdnApp
+  friend void pvChangeWDCallback(ProducerRep *ptr);//友元函数可以访问类的非公开成员
+  //延迟onInterest1功能
   virtual void
   OnInterest(shared_ptr<const Interest> interest);
-
-protected:
-  // inherited from Application base class.
+  //与producer::onInterest一样，在此重新构造是为了producerRep::onInterest函数能够延迟producerRep::onInterest1功能,producerRep::onInterest无法延迟producer::onInterest
   virtual void
-  StartApplication(); // Called at time specified by Start
+  OnInterest1(shared_ptr<const Interest> interest);
+  
+  void SetWatchDog(double t);
 
-  virtual void
-  StopApplication(); // Called at time specified by Stop
-
-private:
-  Name m_prefix;
-  Name m_postfix;
-  uint32_t m_virtualPayloadSize;
-  Time m_freshness;
-
-  uint32_t m_signature;
-  Name m_keyLocator;
+  Watchdog pvChangeWD;
+  int rounds=2;//批量验证轮数
+  bool batchTrue=true;
+  bool honest=false;
+  double batch100=738.367;//us
+  double batch10 =1055.162;//us
+  double secRtrT=670.0;//概率平均值//us
+  int cur_num=0;
+  int trueN=0;
+  int falseN=0;
+  double rep=1;
+  double pv=1;
+  
+  double m_honesty;
 };
 
 } // namespace ndn

@@ -108,6 +108,8 @@ main(int argc, char* argv[])
   // Calculate and install FIBs
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
+  ndn::AppDelayTracer::InstallAll("app-delays-trace1.txt");
+  
   Simulator::Stop(Seconds(1.0));
 
   Simulator::Run();

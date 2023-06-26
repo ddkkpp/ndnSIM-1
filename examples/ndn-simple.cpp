@@ -50,7 +50,7 @@ int
 main(int argc, char* argv[])
 {
   // setting default parameters for PointToPoint links and channels
-  Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("1Mbps"));
+  Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("100Mbps"));
   Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("10ms"));
   Config::SetDefault("ns3::QueueBase::MaxSize", StringValue("20p"));
 
@@ -73,7 +73,8 @@ main(int argc, char* argv[])
   ndnHelper.InstallAll();
 
   // Choosing forwarding strategy
-  ndn::StrategyChoiceHelper::InstallAll("/prefix", "/localhost/nfd/strategy/multicast");
+  ndn::StrategyChoiceHelper::InstallAll("/prefix", "/localhost/nfd/strategy/best-route/%FD%01");
+  //ndn::StrategyChoiceHelper::InstallALL<nfd::fw::BestRouteStrategy>("/prefix");
 
   // Installing applications
 
@@ -81,7 +82,7 @@ main(int argc, char* argv[])
   ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCbr");
   // Consumer will request /prefix/0, /prefix/1, ...
   consumerHelper.SetPrefix("/prefix");
-  consumerHelper.SetAttribute("Frequency", StringValue("10")); // 10 interests a second
+  consumerHelper.SetAttribute("Frequency", StringValue("1000")); // 10 interests a second
   auto apps = consumerHelper.Install(nodes.Get(0));                        // first node
   apps.Stop(Seconds(10.0)); // stop the consumer app at 10 seconds mark
 
@@ -89,9 +90,16 @@ main(int argc, char* argv[])
   ndn::AppHelper producerHelper("ns3::ndn::Producer");
   // Producer will reply to all requests starting with /prefix
   producerHelper.SetPrefix("/prefix");
-  producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
+  producerHelper.SetAttribute("PayloadSize", StringValue("1023"));
+  //producerHelper.SetAttribute("honesty", DoubleValue(0.5));
   producerHelper.Install(nodes.Get(2)); // last node
+  //struct ns3::TypeId::AttributeInformation *info=new ns3::TypeId::AttributeInformation;
+  //producerHelper.m_factory.GetTypeId().LookupAttributeByName(string("PayloadSize"),info);
+  //std::cout<<*(info->initialValue).SerializeToString(MakeUintegerChecker<uint32_t>())<<std::endl;
 
+
+  ndn::AppDelayTracer::InstallAll("app-delays-trace1.txt");
+  
   Simulator::Stop(Seconds(20.0));
 
   Simulator::Run();

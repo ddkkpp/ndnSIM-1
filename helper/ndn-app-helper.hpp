@@ -91,7 +91,7 @@ public:
   ApplicationContainer
   Install(std::string nodeName);
 
-private:
+//private://dkp取消private
   /**
    * \internal
    * Install an ns3::NdnConsumer on the node configured with all the

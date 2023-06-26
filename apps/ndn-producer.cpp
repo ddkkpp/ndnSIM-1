@@ -103,12 +103,23 @@ Producer::OnInterest(shared_ptr<const Interest> interest)
   Name dataName(interest->getName());
   // dataName.append(m_postfix);
   // dataName.appendVersion();
-
+  
+  //修改下面代码以使得每次生成的data中，随机化content中的buffer
   auto data = make_shared<Data>();
   data->setName(dataName);
   data->setFreshnessPeriod(::ndn::time::milliseconds(m_freshness.GetMilliSeconds()));
-
-  data->setContent(make_shared< ::ndn::Buffer>(m_virtualPayloadSize));
+  struct gen_rand { 
+      uint8_t range;          
+  public: 
+      gen_rand(uint8_t r=1) : range(r) {}
+      double operator()() { 
+          return ((uint8_t)rand()) * range;
+      }
+  };
+  std::vector<uint8_t> x(m_virtualPayloadSize);
+  std::generate_n(x.begin(), m_virtualPayloadSize, gen_rand());
+  data->setContent(make_shared< ::ndn::Buffer>(x));
+  //data->setContent(make_shared< ::ndn::Buffer>(m_virtualPayloadSize));//原始代码中：buffer是全0的vector
 
   Signature signature;
   SignatureInfo signatureInfo(static_cast< ::ndn::tlv::SignatureTypeValue>(255));
@@ -129,6 +140,7 @@ Producer::OnInterest(shared_ptr<const Interest> interest)
 
   m_transmittedDatas(data, this, m_face);
   m_appLink->onReceiveData(*data);
+  //Simulator::Schedule(MilliSeconds(4.0), &AppLinkService::onReceiveData, this, *data);// pointer to member type ‘void (ns3::ndn::AppLinkService::)(const ndn::Data&)’ incompatible with object type
 }
 
 } // namespace ndn
