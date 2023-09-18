@@ -76,11 +76,12 @@ void
 ConsumerZipfFdbk::OnData(shared_ptr<const Data> data)
 {
   Consumer::OnData(data);
-  feedback_name=data->getName();
-  feedback_content=data->getContent();
-  if(data->getSignature().getValue()==std::numeric_limits<uint32_t>::max())//data为假
+  if(::ndn::readNonNegativeInteger(data->getSignature().getValue())==std::numeric_limits<uint32_t>::max())//data为假
   {
-      SendFeedback();
+    feedback_name=data->getName();
+    feedback_content=data->getContent();
+    NS_LOG_DEBUG("Receive invalid data");
+    SendFeedback();
   }
 }
 
@@ -144,14 +145,29 @@ ConsumerZipfFdbk::SendFeedback()
 
   NS_LOG_FUNCTION_NOARGS();
 
+  uint64_t content_64=0;//加入过滤器的元素
+  int j=0;
+  //content的buffer是vector<uint8_t>,遍历该容器，转化为过滤器能使用的uint64_t
+  for(auto i=feedback_content.value_begin();i<feedback_content.value_end();i++){
+    if(j==7){
+      j=0;
+    }
+    //std::cout<<"j="<<j<<" i="<<(int)i<<std::endl;
+    content_64+=((*i)<<(8*j));
+    j++;
+    //std::cout<<"content= "<<content<<std::endl;
+  }
+
   shared_ptr<Interest> feedback = make_shared<Interest>();
   feedback->setName(feedback_name);
-  feedback->setApplicationParameters(feedback_content);
+  //feedback->setApplicationParameters(feedback_content);
   feedback->setNonce(std::numeric_limits<uint32_t>::max());//feedback的nouce设置为max
+  feedback->setContentinFeedback(content_64);
 
   // NS_LOG_INFO ("Requesting Feedback: \n" << *interest);
-  NS_LOG_INFO("> Feedback for " << feedback_name << ", face: " << m_face->getId());
+  NS_LOG_INFO("Send feedback " << feedback_name << ", to face: " << m_face->getId()<<" , aims at content_64 = "<<content_64);
 
+  NS_LOG_INFO("Feedback's getContentinFeedback is "<<feedback->getContentinFeedback());
 
   m_transmittedInterests(feedback, this, m_face);
   m_appLink->onReceiveInterest(*feedback);

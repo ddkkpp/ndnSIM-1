@@ -116,7 +116,8 @@ Producer::OnInterest(shared_ptr<const Interest> interest)
           return ((uint8_t)rand()) * range;
       }
   };
-  std::vector<uint8_t> x(m_virtualPayloadSize);
+  ::ndn::Buffer x(m_virtualPayloadSize);//必须::ndn::Buffer（顶级名称空间中）
+  //std::vector<uint8_t> x(m_virtualPayloadSize);
   std::generate_n(x.begin(), m_virtualPayloadSize, gen_rand());
   data->setContent(make_shared< ::ndn::Buffer>(x));
   //data->setContent(make_shared< ::ndn::Buffer>(m_virtualPayloadSize));//原始代码中：buffer是全0的vector
