@@ -365,7 +365,7 @@ GlobalRoutingHelper::CalculateAllPossibleRoutes()
                            << " with distance " << std::get<1>(dist.second)
                            << " with delay " << std::get<2>(dist.second));
 
-              if (std::get<0>(dist.second)->getMetric() == std::numeric_limits<uint16_t>::max() - 1)
+              if ((std::get<0>(dist.second)->getMetric() == (uint64_t)(std::numeric_limits<uint16_t>::max() - 1)))
                 continue;
 
               FibHelper::AddRoute(*node, *prefix, std::get<0>(dist.second),

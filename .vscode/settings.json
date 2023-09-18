@@ -1,5 +1,29 @@
 {
     "files.associations": {
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "map": "cpp",
+        "any": "cpp",
+        "bitset": "cpp",
+        "random": "cpp",
+        "future": "cpp",
+        "memory_resource": "cpp",
+        "optional": "cpp",
+        "array": "cpp",
+        "hash_map": "cpp",
+        "*.tcc": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "iterator": "cpp",
+        "string_view": "cpp",
+        "algorithm": "cpp",
+        "memory": "cpp",
+        "initializer_list": "cpp",
+        "numeric": "cpp",
+        "regex": "cpp",
+        "valarray": "cpp"
     }
 }
