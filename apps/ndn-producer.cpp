@@ -108,7 +108,20 @@ Producer::OnInterest(shared_ptr<const Interest> interest)
   data->setName(dataName);
   data->setFreshnessPeriod(::ndn::time::milliseconds(m_freshness.GetMilliSeconds()));
 
-  data->setContent(make_shared< ::ndn::Buffer>(m_virtualPayloadSize));
+  struct gen_rand { 
+      uint8_t range;          
+  public: 
+      gen_rand(uint8_t r=1) : range(r) {}
+      double operator()() { 
+          return ((uint8_t)rand()) * range;
+      }
+  };
+  ::ndn::Buffer x(m_virtualPayloadSize);//必须::ndn::Buffer（顶级名称空间中）
+  //std::vector<uint8_t> x(m_virtualPayloadSize);
+  std::generate_n(x.begin(), m_virtualPayloadSize, gen_rand());
+  data->setContent(make_shared< ::ndn::Buffer>(x));
+  //data->setContent(make_shared< ::ndn::Buffer>(m_virtualPayloadSize));//原始代码中：buffer是全0的vector  
+  //data->setContent(make_shared< ::ndn::Buffer>(m_virtualPayloadSize));
 
   SignatureInfo signatureInfo(static_cast< ::ndn::tlv::SignatureTypeValue>(255));
 

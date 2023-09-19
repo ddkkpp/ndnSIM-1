@@ -27,6 +27,7 @@
 
 #include "ns3/nstime.h"
 #include "ns3/ptr.h"
+#include <vector>
 
 namespace ns3 {
 namespace ndn {
