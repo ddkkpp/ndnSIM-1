@@ -21,6 +21,7 @@
 
 #include "ndn-consumer-zipf-fdbk.hpp"
 #include "ndn-cxx/data.hpp"
+#include <ndn-cxx/lp/tags.hpp>
 
 #include <math.h>
 
@@ -77,12 +78,16 @@ ConsumerZipfFdbk::OnData(shared_ptr<const Data> data)
 {
   Consumer::OnData(data);
   //if(::ndn::readNonNegativeInteger(data->getSignature().getValue())==std::numeric_limits<uint32_t>::max())//data为假
-  if(!(data->getIsFake()))
+  //假包
+  if(data->getSignatureInfo().getSignatureType()==1)
   {
     feedback_name=data->getName();
     feedback_content=data->getContent();
     NS_LOG_DEBUG("Receive invalid data");
     SendFeedback();
+  }
+  else{
+    NS_LOG_DEBUG("Receive valid content");
   }
 }
 
@@ -160,15 +165,19 @@ ConsumerZipfFdbk::SendFeedback()
   }
 
   shared_ptr<Interest> feedback = make_shared<Interest>();
-  feedback->setName(feedback_name);
+  feedback->setTag(make_shared<lp::FeedbackDataTag>(content_64));
   //feedback->setApplicationParameters(feedback_content);
+  feedback->setName(feedback_name);
   feedback->setNonce(std::numeric_limits<uint32_t>::max());//feedback的nouce设置为max
-  feedback->setContentinFeedback(content_64);
+  //feedback->setContentinFeedback(content_64);
 
   // NS_LOG_INFO ("Requesting Feedback: \n" << *interest);
-  NS_LOG_INFO("Send feedback " << feedback_name << ", to face: " << m_face->getId()<<" , aims at content_64 = "<<content_64);
+  NS_LOG_INFO("Send feedback " << feedback->getName() << ", to face: " << m_face->getId()<<" , aims at content_64 = "<<content_64);
 
-  NS_LOG_INFO("Feedback's getContentinFeedback is "<<feedback->getContentinFeedback());
+   //auto content1=feedback->getApplicationParameters();
+  //注意gettag得到的是指针
+  auto content1_64=*(feedback->getTag<lp::FeedbackDataTag>());
+    NS_LOG_INFO("Send feedback " << feedback->getName() << ", to face: " << m_face->getId()<<" , aims at content1_64 = "<<content1_64);
 
   m_transmittedInterests(feedback, this, m_face);
   m_appLink->onReceiveInterest(*feedback);

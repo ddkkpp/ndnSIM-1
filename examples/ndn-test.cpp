@@ -59,7 +59,7 @@ main(int argc, char* argv[])
   // Setting default parameters for PointToPoint links and channels
   Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("1Mbps"));
   Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("10ms"));
-  Config::SetDefault("ns3::QueueBase::MaxSize", StringValue("10p"));
+  Config::SetDefault("ns3::DropTailQueue<Packet>::MaxSize", StringValue("10p"));
 
   // Read optional command-line parameters (e.g., enable visualizer with ./waf --run=<> --visualize
   CommandLine cmd;
@@ -72,10 +72,11 @@ main(int argc, char* argv[])
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
+  ndnHelper.setCsSize(1000);
   ndnHelper.InstallAll();
 
   // Set BestRoute strategy
-  //ndn::StrategyChoiceHelper::InstallAll("/", "/localhost/nfd/strategy/multicast/%FD%03");
+  //ndn::StrategyChoiceHelper::InstallAll("/", "/localhost/nfd/strategy/multicast");
   ndn::StrategyChoiceHelper::InstallAll("/", "/localhost/nfd/strategy/best-route");
   //ndn::StrategyChoiceHelper::Install(grid.GetNode(0,0), "/", "/localhost/nfd/strategy/multicast/%FD%03");
 
@@ -127,14 +128,14 @@ main(int argc, char* argv[])
 //                   (Seconds(5.0),ndn::StrategyChoiceHelper::Install, grid.GetNode(0,1), "/","/localhost/nfd/strategy/multicast/%FD%03");
 
  void (*p)(Ptr<Node>, const ndn::Name&, const ndn::Name&)=&ndn::StrategyChoiceHelper::Install;
- Simulator::Schedule(Seconds(1.0),p, grid.GetNode(0,1), "/","/localhost/nfd/strategy/mal-best-route/%FD%05");
+ Simulator::Schedule(Seconds(1.0),p, grid.GetNode(0,1), "/","/localhost/nfd/strategy/mal-best-route");
 
     //Simulator::Schedule(Seconds(1.0), ndn::LinkControlHelper::FailLink, grid.GetNode(0,1), grid.GetNode(1,1));
   //  Simulator::Schedule(Seconds(1.0), ndn::LinkControlHelper::FailLink, grid.GetNode(0,1), grid.GetNode(0,2));
     //Simulator::Schedule(Seconds(1.0), ndn::LinkControlHelper::FailLink, grid.GetNode(0,0), grid.GetNode(0,1));
     //Simulator::Schedule(Seconds(1.0), ndn::LinkControlHelper::FailLink, Names::Find<Node>("4"), Names::Find<Node>("7"));
 
-  Simulator::Stop(Seconds(20.0));
+  Simulator::Stop(Seconds(10.0));
 
   Simulator::Run();
   Simulator::Destroy();
