@@ -72,7 +72,7 @@ main(int argc, char* argv[])
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
-  ndnHelper.setCsSize(1000);
+  ndnHelper.setCsSize(10);
   ndnHelper.InstallAll();
 
   // Set BestRoute strategy
@@ -119,7 +119,7 @@ main(int argc, char* argv[])
   ndnGlobalRoutingHelper.CalculateAllPossibleRoutes();
 
 
-//以下搞了半天，因为在schedule里面使用StrategyChoiceHelper::Install总是会出现nresolved overloaded function type>error
+//以下搞了半天，因为在schedule里面使用StrategyChoiceHelper::Install总是会出现unresolved overloaded function type>error
 //Simulator::Schedule(Seconds(5.0),&ndn::StrategyChoiceHelper::InstallAll, "/", "/localhost/nfd/strategy/multicast/%FD%03");//InstallAll就可以
   //Simulator::Schedule(Seconds(5.0),[=](Ptr<Node> node, const ndn::Name& namePrefix, const ndn::Name& strategy){return this->ndn::StrategyChoiceHelper::Install(node,namePrefix,strategy);}, grid.GetNode(0,1), "/", "/localhost/nfd/strategy/multicast/%FD%03");
 //Simulator::Schedule(Seconds(5.0),&ndn::StrategyChoiceHelper::Install, grid.GetNode(0,1), "/", "/localhost/nfd/strategy/multicast/%FD%03");
@@ -128,12 +128,14 @@ main(int argc, char* argv[])
 //                   (Seconds(5.0),ndn::StrategyChoiceHelper::Install, grid.GetNode(0,1), "/","/localhost/nfd/strategy/multicast/%FD%03");
 
  void (*p)(Ptr<Node>, const ndn::Name&, const ndn::Name&)=&ndn::StrategyChoiceHelper::Install;
- Simulator::Schedule(Seconds(1.0),p, grid.GetNode(0,1), "/","/localhost/nfd/strategy/mal-best-route");
+ Simulator::Schedule(Seconds(1),p, grid.GetNode(0,2), "/","/localhost/nfd/strategy/mal-best-route");
 
     //Simulator::Schedule(Seconds(1.0), ndn::LinkControlHelper::FailLink, grid.GetNode(0,1), grid.GetNode(1,1));
   //  Simulator::Schedule(Seconds(1.0), ndn::LinkControlHelper::FailLink, grid.GetNode(0,1), grid.GetNode(0,2));
     //Simulator::Schedule(Seconds(1.0), ndn::LinkControlHelper::FailLink, grid.GetNode(0,0), grid.GetNode(0,1));
     //Simulator::Schedule(Seconds(1.0), ndn::LinkControlHelper::FailLink, Names::Find<Node>("4"), Names::Find<Node>("7"));
+
+ ndn::AppDelayTracer::InstallAll("app-delays-trace.txt");
 
   Simulator::Stop(Seconds(10.0));
 

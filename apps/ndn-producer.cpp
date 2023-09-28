@@ -107,7 +107,12 @@ Producer::OnInterest(shared_ptr<const Interest> interest)
   auto data = make_shared<Data>();
   data->setName(dataName);
   data->setFreshnessPeriod(::ndn::time::milliseconds(m_freshness.GetMilliSeconds()));
-
+/*
+  定义了一个名为gen_rand的结构体，其中包含一个成员变量range，表示随机数的范围。
+在gen_rand结构体中定义了一个重载的函数调用运算符operator()，用于生成随机数。
+创建了一个名为x的::ndn::Buffer对象，其大小为m_virtualPayloadSize。
+使用std::generate_n函数，生成m_virtualPayloadSize个随机数，并将其存储在x中。
+*/
   struct gen_rand { 
       uint8_t range;          
   public: 

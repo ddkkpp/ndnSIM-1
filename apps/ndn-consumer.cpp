@@ -212,6 +212,7 @@ Consumer::SendPacket()
 void
 Consumer::OnData(shared_ptr<const Data> data)
 {
+  
   if (!m_active)
     return;
 
@@ -234,12 +235,12 @@ Consumer::OnData(shared_ptr<const Data> data)
 
   SeqTimeoutsContainer::iterator entry = m_seqLastDelay.find(seq);
   if (entry != m_seqLastDelay.end()) {
-    m_lastRetransmittedInterestDataDelay(this, seq, Simulator::Now() - entry->time, hopCount);
+    m_lastRetransmittedInterestDataDelay(this, seq, Simulator::Now() - entry->time + MilliSeconds(*(data->getTag<lp::ExtraDelayTag>())) , hopCount);
   }
 
   entry = m_seqFullDelay.find(seq);
   if (entry != m_seqFullDelay.end()) {
-    m_firstInterestDataDelay(this, seq, Simulator::Now() - entry->time, m_seqRetxCounts[seq], hopCount);
+    m_firstInterestDataDelay(this, seq, Simulator::Now() - entry->time + MilliSeconds(*(data->getTag<lp::ExtraDelayTag>())), m_seqRetxCounts[seq], hopCount);
   }
 
   m_seqRetxCounts.erase(seq);
