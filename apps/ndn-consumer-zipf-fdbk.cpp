@@ -79,12 +79,13 @@ ConsumerZipfFdbk::OnData(shared_ptr<const Data> data)
   Consumer::OnData(data);
   //if(::ndn::readNonNegativeInteger(data->getSignature().getValue())==std::numeric_limits<uint32_t>::max())//data为假
   //假包
+  NS_LOG_DEBUG("signature= "<<data->getSignatureInfo().getSignatureType());
   if(data->getSignatureInfo().getSignatureType()==1)
   {
     feedback_name=data->getName();
     feedback_content=data->getContent();
     NS_LOG_DEBUG("Receive invalid data");
-    SendFeedback();
+    //SendFeedback();
   }
   else{
     NS_LOG_DEBUG("Receive valid content");

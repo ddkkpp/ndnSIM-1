@@ -72,7 +72,7 @@ main(int argc, char* argv[])
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
-  ndnHelper.setCsSize(10);
+  ndnHelper.setCsSize(100);
   ndnHelper.InstallAll();
 
   // Set BestRoute strategy
@@ -100,10 +100,17 @@ main(int argc, char* argv[])
   consumerHelper.SetAttribute("s",StringValue("0.1"));
   consumerHelper.Install(consumerNodes);
 
+
   // ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCbr");
   // consumerHelper.SetPrefix(prefix);
-  // consumerHelper.SetAttribute("Frequency", StringValue("100")); // 100 interests a second
+  // consumerHelper.SetAttribute("Frequency", StringValue("100")); 
   // consumerHelper.Install(consumerNodes);
+
+  // ndn::AppHelper consumerHelper("ns3::ndn::ConsumerBatches");
+  // consumerHelper.SetPrefix(prefix);
+  // consumerHelper.SetAttribute("Batches", StringValue("1s 100 3s 100"));
+  // consumerHelper.Install(consumerNodes);
+
 
   ndn::AppHelper producerHelper("ns3::ndn::Producer");
   producerHelper.SetPrefix(prefix);
@@ -128,7 +135,7 @@ main(int argc, char* argv[])
 //                   (Seconds(5.0),ndn::StrategyChoiceHelper::Install, grid.GetNode(0,1), "/","/localhost/nfd/strategy/multicast/%FD%03");
 
  void (*p)(Ptr<Node>, const ndn::Name&, const ndn::Name&)=&ndn::StrategyChoiceHelper::Install;
- //Simulator::Schedule(Seconds(1),p, grid.GetNode(0,2), "/","/localhost/nfd/strategy/mal-best-route");
+ Simulator::Schedule(Seconds(1),p, grid.GetNode(0,2), "/","/localhost/nfd/strategy/mal-best-route");
 
     //Simulator::Schedule(Seconds(1.0), ndn::LinkControlHelper::FailLink, grid.GetNode(0,1), grid.GetNode(1,1));
   //  Simulator::Schedule(Seconds(1.0), ndn::LinkControlHelper::FailLink, grid.GetNode(0,1), grid.GetNode(0,2));
