@@ -38,6 +38,7 @@
 #include <boost/multi_index/tag.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
+#include "ns3/watchdog.h"
 
 namespace ns3 {
 namespace ndn {
@@ -58,6 +59,7 @@ public:
   Consumer();
   virtual ~Consumer(){};
 
+  friend void computeISRWDCallback(Consumer *ptr);//友元函数可以访问类的非公开成员
   // From App
   virtual void
   OnData(shared_ptr<const Data> contentObject);
@@ -131,6 +133,8 @@ protected:
   Time
   GetRetxTimer() const;
 
+  void SetWatchDog(double t);
+
 protected:
   Ptr<UniformRandomVariable> m_rand; ///< @brief nonce generator
 
@@ -146,6 +150,10 @@ protected:
   Name m_interestName;     ///< \brief NDN Name of the Interest (use Name)
   Time m_interestLifeTime; ///< \brief LifeTime for interest packet
 
+  Watchdog computeISRWD;
+  uint32_t m_numOfSentInterests=0;
+  uint32_t m_numOfReceivedData=0;
+  uint32_t m_numOfReceivedValidData=0;
   /// @cond include_hidden
   /**
    * \struct This struct contains sequence numbers of packets to be retransmitted

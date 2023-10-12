@@ -57,7 +57,7 @@ int
 main(int argc, char* argv[])
 {
   // Setting default parameters for PointToPoint links and channels
-  Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("1Mbps"));
+  Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("10Mbps"));
   Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("10ms"));
   Config::SetDefault("ns3::DropTailQueue<Packet>::MaxSize", StringValue("10p"));
 
@@ -94,7 +94,7 @@ main(int argc, char* argv[])
 
   ndn::AppHelper consumerHelper("ns3::ndn::ConsumerZipfFdbk");
   consumerHelper.SetPrefix(prefix);
-  consumerHelper.SetAttribute("Frequency", StringValue("100")); // 10000 interests a second//不能超过带宽
+  consumerHelper.SetAttribute("Frequency", StringValue("1000")); // 10000 interests a second//不能超过带宽
   consumerHelper.SetAttribute("NumberOfContents",StringValue("1000"));
   consumerHelper.SetAttribute("q",StringValue("1"));
   consumerHelper.SetAttribute("s",StringValue("0.1"));
@@ -138,7 +138,7 @@ main(int argc, char* argv[])
  Simulator::Schedule(Seconds(1),p, grid.GetNode(0,2), "/","/localhost/nfd/strategy/mal-best-route");
 
  void (*q)(Ptr<Node>, const ndn::Name&, const ndn::Name&)=&ndn::StrategyChoiceHelper::Install;
- //Simulator::Schedule(Seconds(3),q, grid.GetNode(0,1), "/","/localhost/nfd/strategy/verify-best-route");
+ Simulator::Schedule(Seconds(3),q, grid.GetNode(0,1), "/","/localhost/nfd/strategy/verify-best-route");
 
     //Simulator::Schedule(Seconds(1.0), ndn::LinkControlHelper::FailLink, grid.GetNode(0,1), grid.GetNode(1,1));
   //  Simulator::Schedule(Seconds(1.0), ndn::LinkControlHelper::FailLink, grid.GetNode(0,1), grid.GetNode(0,2));

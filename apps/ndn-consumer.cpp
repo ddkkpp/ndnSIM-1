@@ -44,6 +44,18 @@ namespace ndn {
 
 NS_OBJECT_ENSURE_REGISTERED(Consumer);
 
+void computeISRWDCallback(Consumer *ptr)
+{
+  NS_LOG_DEBUG("m_numOfSentInterests in this period = "<<ptr->m_numOfSentInterests);
+  NS_LOG_DEBUG("m_numOfReceivedData in this period = "<<ptr->m_numOfReceivedData);
+  NS_LOG_DEBUG("m_numOfReceivedValidData in this period = "<<ptr->m_numOfReceivedValidData);
+  NS_LOG_DEBUG("ISR in this period = "<<double(ptr->m_numOfReceivedValidData) / double(ptr->m_numOfSentInterests));
+  ptr->m_numOfSentInterests=0;
+  ptr->m_numOfReceivedData=0;
+  ptr->m_numOfReceivedValidData=0;
+  ptr->computeISRWD.Ping(MilliSeconds(100));
+}
+
 TypeId
 Consumer::GetTypeId(void)
 {
@@ -64,6 +76,11 @@ Consumer::GetTypeId(void)
                     StringValue("50ms"),
                     MakeTimeAccessor(&Consumer::GetRetxTimer, &Consumer::SetRetxTimer),
                     MakeTimeChecker())
+
+      .AddAttribute("WatchDog", "",
+                                  DoubleValue(100),
+                                  MakeDoubleAccessor(&Consumer::SetWatchDog),
+                                  MakeDoubleChecker<double>())
 
       .AddTraceSource("LastRetransmittedInterestDataDelay",
                       "Delay between last retransmitted Interest and received Data",
@@ -86,6 +103,17 @@ Consumer::Consumer()
   NS_LOG_FUNCTION_NOARGS();
 
   m_rtt = CreateObject<RttMeanDeviation>();
+}
+
+void 
+Consumer::SetWatchDog(double t)
+{
+    if (t > 0)
+    {
+        computeISRWD.Ping(MilliSeconds(t));
+        computeISRWD.SetFunction(computeISRWDCallback);
+        computeISRWD.SetArguments<Consumer *>(this);
+    }
 }
 
 void
@@ -197,6 +225,9 @@ Consumer::SendPacket()
   // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
   NS_LOG_INFO("> Interest for " << seq);
 
+  // ++m_numOfSentInterests;
+  // NS_LOG_DEBUG("发送兴趣, m_numOfSentInterests="<<m_numOfSentInterests);
+
   WillSendOutInterest(seq);
 
   m_transmittedInterests(interest, this, m_face);
@@ -218,6 +249,12 @@ Consumer::OnData(shared_ptr<const Data> data)
 
   App::OnData(data); // tracing inside
 
+  ++m_numOfReceivedData;
+  NS_LOG_DEBUG("收到数据, m_numOfReceivedData="<<m_numOfReceivedData);
+  if(data->getSignatureInfo().getSignatureType()==255){
+    ++m_numOfReceivedValidData;
+    NS_LOG_DEBUG("收到真实数据, m_numOfReceivedValidData="<<m_numOfReceivedValidData);
+  }
   NS_LOG_FUNCTION(this << data);
 
   // NS_LOG_INFO ("Received content object: " << boost::cref(*data));

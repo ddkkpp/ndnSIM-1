@@ -234,6 +234,9 @@ ConsumerZipfFdbk::SendPacket()
   nameWithSequence->appendSequenceNumber(seq);
   //
 
+  ++m_numOfSentInterests;
+  NS_LOG_DEBUG("发送兴趣, m_numOfSentInterests="<<m_numOfSentInterests);
+  
   shared_ptr<Interest> interest = make_shared<Interest>();
   interest->setNonce(m_rand->GetValue(0, std::numeric_limits<uint32_t>::max()-1));
   interest->setName(*nameWithSequence);
