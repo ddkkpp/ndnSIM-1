@@ -50,10 +50,23 @@ void computeISRWDCallback(Consumer *ptr)
   NS_LOG_DEBUG("m_numOfReceivedData in this period = "<<ptr->m_numOfReceivedData);
   NS_LOG_DEBUG("m_numOfReceivedValidData in this period = "<<ptr->m_numOfReceivedValidData);
   NS_LOG_DEBUG("ISR in this period = "<<double(ptr->m_numOfReceivedValidData) / double(ptr->m_numOfSentInterests));
+  if(ptr->m_numOfReceivedData==0){
+    NS_LOG_DEBUG("VDR in this period = (没有data返回)");
+  }
+  else{
+    NS_LOG_DEBUG("VDR in this period = "<<double(ptr->m_numOfReceivedValidData) / double(ptr->m_numOfReceivedData));
+  }
+  if(ptr->m_numOfReceivedValidData==0){
+    NS_LOG_DEBUG("retrievalTime in this period = (没有valid data返回)");
+  }
+  else{
+    NS_LOG_DEBUG("retrievalTime in this period = "<<ptr->m_sumRetrievalTime.GetMilliSeconds() / ptr->m_numOfReceivedValidData);
+  }
   ptr->m_numOfSentInterests=0;
   ptr->m_numOfReceivedData=0;
   ptr->m_numOfReceivedValidData=0;
-  ptr->computeISRWD.Ping(MilliSeconds(100));
+  ptr->m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
+  ptr->computeISRWD.Ping(MilliSeconds(500));
 }
 
 TypeId
@@ -78,7 +91,7 @@ Consumer::GetTypeId(void)
                     MakeTimeChecker())
 
       .AddAttribute("WatchDog", "",
-                                  DoubleValue(100),
+                                  DoubleValue(500),
                                   MakeDoubleAccessor(&Consumer::SetWatchDog),
                                   MakeDoubleChecker<double>())
 
@@ -141,7 +154,7 @@ Consumer::CheckRetxTimeout()
   Time now = Simulator::Now();
 
   Time rto = m_rtt->RetransmitTimeout();
-  // NS_LOG_DEBUG ("Current RTO: " << rto.ToDouble (Time::S) << "s");
+  NS_LOG_DEBUG ("Current RTO: " << rto.ToDouble (Time::S) << "s");
 
   while (!m_seqTimeouts.empty()) {
     SeqTimeoutsContainer::index<i_timestamp>::type::iterator entry =
@@ -278,7 +291,13 @@ Consumer::OnData(shared_ptr<const Data> data)
   entry = m_seqFullDelay.find(seq);
   if (entry != m_seqFullDelay.end()) {
     m_firstInterestDataDelay(this, seq, Simulator::Now() - entry->time + MilliSeconds(*(data->getTag<lp::ExtraDelayTag>())), m_seqRetxCounts[seq], hopCount);
-  }
+    m_sumRetrievalTime=m_sumRetrievalTime + Simulator::Now() - entry->time + MilliSeconds(*(data->getTag<lp::ExtraDelayTag>()));
+    NS_LOG_DEBUG("m_sumRetrievalTime= "<<m_sumRetrievalTime.GetMilliSeconds());
+  } 
+
+  //验证次数
+  int verificationTimes=(*(data->getTag<lp::ExtraDelayTag>()))/4;
+  NS_LOG_DEBUG("verificationTimes: " << verificationTimes);
 
   m_seqRetxCounts.erase(seq);
   m_seqFullDelay.erase(seq);

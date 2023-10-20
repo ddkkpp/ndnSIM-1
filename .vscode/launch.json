@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/dkp/ndnSIM_new/ns-3/src/ndnSIM/NFD/daemon/table",
-      "program": "/home/dkp/ndnSIM_new/ns-3/src/ndnSIM/NFD/daemon/table/build/Debug/outDebug",
+      "cwd": "/home/dkp/ndnSIM_new/ns-3/src/ndnSIM/examples",
+      "program": "/home/dkp/ndnSIM_new/ns-3/src/ndnSIM/examples/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
