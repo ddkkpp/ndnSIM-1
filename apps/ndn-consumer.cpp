@@ -44,6 +44,21 @@ namespace ndn {
 
 NS_OBJECT_ENSURE_REGISTERED(Consumer);
 
+void computeISRWDCallback(Consumer *ptr)
+{
+  if(ptr->m_numOfReceivedData==0){
+    NS_LOG_DEBUG("没有 data返回)");
+  }
+  else{
+    NS_LOG_DEBUG("ISR in this period = "<<double(ptr->m_numOfReceivedData) / double(ptr->m_numOfSentInterests));
+    NS_LOG_DEBUG("rtt in this period = "<<ptr->m_sumRetrievalTime.GetMilliSeconds() / ptr->m_numOfSentInterests);
+  }
+  ptr->m_numOfSentInterests=0;
+  ptr->m_numOfReceivedData=0;
+  ptr->m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
+  ptr->computeISRWD.Ping(MilliSeconds(500));
+}
+
 TypeId
 Consumer::GetTypeId(void)
 {
@@ -64,6 +79,11 @@ Consumer::GetTypeId(void)
                     StringValue("50ms"),
                     MakeTimeAccessor(&Consumer::GetRetxTimer, &Consumer::SetRetxTimer),
                     MakeTimeChecker())
+
+      .AddAttribute("WatchDog", "",
+                                  DoubleValue(500),
+                                  MakeDoubleAccessor(&Consumer::SetWatchDog),
+                                  MakeDoubleChecker<double>())
 
       .AddTraceSource("LastRetransmittedInterestDataDelay",
                       "Delay between last retransmitted Interest and received Data",
@@ -86,6 +106,17 @@ Consumer::Consumer()
   NS_LOG_FUNCTION_NOARGS();
 
   m_rtt = CreateObject<RttMeanDeviation>();
+}
+
+void 
+Consumer::SetWatchDog(double t)
+{
+    if (t > 0)
+    {
+        computeISRWD.Ping(MilliSeconds(t));
+        computeISRWD.SetFunction(computeISRWDCallback);
+        computeISRWD.SetArguments<Consumer *>(this);
+    }
 }
 
 void
@@ -113,7 +144,7 @@ Consumer::CheckRetxTimeout()
   Time now = Simulator::Now();
 
   Time rto = m_rtt->RetransmitTimeout();
-  // NS_LOG_DEBUG ("Current RTO: " << rto.ToDouble (Time::S) << "s");
+  //NS_LOG_DEBUG ("Current RTO: " << rto.ToDouble (Time::S) << "s");
 
   while (!m_seqTimeouts.empty()) {
     SeqTimeoutsContainer::index<i_timestamp>::type::iterator entry =
@@ -197,6 +228,9 @@ Consumer::SendPacket()
   // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
   NS_LOG_INFO("> Interest for " << seq);
 
+  ++m_numOfSentInterests;
+  // NS_LOG_DEBUG("发送兴趣, m_numOfSentInterests="<<m_numOfSentInterests);
+
   WillSendOutInterest(seq);
 
   m_transmittedInterests(interest, this, m_face);
@@ -212,35 +246,42 @@ Consumer::SendPacket()
 void
 Consumer::OnData(shared_ptr<const Data> data)
 {
+  
   if (!m_active)
     return;
 
   App::OnData(data); // tracing inside
 
-  NS_LOG_FUNCTION(this << data);
+  ++m_numOfReceivedData;
+  //NS_LOG_DEBUG("收到数据, m_numOfReceivedData="<<m_numOfReceivedData);
+
+  //NS_LOG_FUNCTION(this << data);
 
   // NS_LOG_INFO ("Received content object: " << boost::cref(*data));
 
   // This could be a problem......
   uint32_t seq = data->getName().at(-1).toSequenceNumber();
-  NS_LOG_INFO("< DATA for " << seq);
+  //NS_LOG_INFO("< DATA for " << seq);
 
   int hopCount = 0;
   auto hopCountTag = data->getTag<lp::HopCountTag>();
   if (hopCountTag != nullptr) { // e.g., packet came from local node's cache
     hopCount = *hopCountTag;
   }
-  NS_LOG_DEBUG("Hop count: " << hopCount);
+  //NS_LOG_DEBUG("Hop count: " << hopCount);
 
   SeqTimeoutsContainer::iterator entry = m_seqLastDelay.find(seq);
   if (entry != m_seqLastDelay.end()) {
-    m_lastRetransmittedInterestDataDelay(this, seq, Simulator::Now() - entry->time, hopCount);
+    //m_lastRetransmittedInterestDataDelay(this, seq, Simulator::Now() - entry->time + MilliSeconds(*(data->getTag<lp::ExtraDelayTag>())) , hopCount);
+    m_lastRetransmittedInterestDataDelay(this, seq, Simulator::Now() - entry->time , hopCount);
   }
 
   entry = m_seqFullDelay.find(seq);
   if (entry != m_seqFullDelay.end()) {
     m_firstInterestDataDelay(this, seq, Simulator::Now() - entry->time, m_seqRetxCounts[seq], hopCount);
-  }
+    m_sumRetrievalTime=m_sumRetrievalTime + Simulator::Now() - entry->time ;
+  } 
+
 
   m_seqRetxCounts.erase(seq);
   m_seqFullDelay.erase(seq);
@@ -258,8 +299,8 @@ Consumer::OnNack(shared_ptr<const lp::Nack> nack)
   /// tracing inside
   App::OnNack(nack);
 
-  NS_LOG_INFO("NACK received for: " << nack->getInterest().getName()
-              << ", reason: " << nack->getReason());
+  //NS_LOG_INFO("NACK received for: " << nack->getInterest().getName()
+    //          << ", reason: " << nack->getReason());
 }
 
 void

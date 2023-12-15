@@ -170,6 +170,9 @@ ConsumerZipfMandelbrot::SendPacket()
   nameWithSequence->appendSequenceNumber(seq);
   //
 
+  ++m_numOfSentInterests;
+  NS_LOG_DEBUG("发送兴趣, m_numOfSentInterests="<<m_numOfSentInterests);
+  
   shared_ptr<Interest> interest = make_shared<Interest>();
   interest->setNonce(m_rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setName(*nameWithSequence);
@@ -192,7 +195,7 @@ ConsumerZipfMandelbrot::SendPacket()
   m_transmittedInterests(interest, this, m_face);
   m_appLink->onReceiveInterest(*interest);
 
-  ConsumerZipfMandelbrot::ScheduleNextPacket();
+  ConsumerZipfMandelbrot::ScheduleNextPacket();  
 }
 
 uint32_t
