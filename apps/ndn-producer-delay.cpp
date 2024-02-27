@@ -17,7 +17,7 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include "ndn-producer.hpp"
+#include "ndn-producer-delay.hpp"
 #include "ns3/log.h"
 #include "ns3/string.h"
 #include "ns3/uinteger.h"
@@ -29,52 +29,55 @@
 
 #include <memory>
 
-NS_LOG_COMPONENT_DEFINE("ndn.Producer");
+NS_LOG_COMPONENT_DEFINE("ndn.ProducerDelay");
 
 namespace ns3 {
 namespace ndn {
 
-NS_OBJECT_ENSURE_REGISTERED(Producer);
+NS_OBJECT_ENSURE_REGISTERED(ProducerDelay);
 
 TypeId
-Producer::GetTypeId(void)
+ProducerDelay::GetTypeId(void)
 {
   static TypeId tid =
-    TypeId("ns3::ndn::Producer")
+    TypeId("ns3::ndn::ProducerDelay")
       .SetGroupName("Ndn")
       .SetParent<App>()
-      .AddConstructor<Producer>()
-      .AddAttribute("Prefix", "Prefix, for which producer has the data", StringValue("/"),
-                    MakeNameAccessor(&Producer::m_prefix), MakeNameChecker())
+      .AddConstructor<ProducerDelay>()
+      .AddAttribute("Prefix", "Prefix, for which ProducerDelay has the data", StringValue("/"),
+                    MakeNameAccessor(&ProducerDelay::m_prefix), MakeNameChecker())
       .AddAttribute(
          "Postfix",
-         "Postfix that is added to the output data (e.g., for adding producer-uniqueness)",
-         StringValue("/"), MakeNameAccessor(&Producer::m_postfix), MakeNameChecker())
+         "Postfix that is added to the output data (e.g., for adding ProducerDelay-uniqueness)",
+         StringValue("/"), MakeNameAccessor(&ProducerDelay::m_postfix), MakeNameChecker())
       .AddAttribute("PayloadSize", "Virtual payload size for Content packets", UintegerValue(1024),
-                    MakeUintegerAccessor(&Producer::m_virtualPayloadSize),
+                    MakeUintegerAccessor(&ProducerDelay::m_virtualPayloadSize),
                     MakeUintegerChecker<uint32_t>())
       .AddAttribute("Freshness", "Freshness of data packets, if 0, then unlimited freshness",
-                    TimeValue(Seconds(0)), MakeTimeAccessor(&Producer::m_freshness),
+                    TimeValue(Seconds(0)), MakeTimeAccessor(&ProducerDelay::m_freshness),
                     MakeTimeChecker())
       .AddAttribute(
          "Signature",
          "Fake signature, 0 valid signature (default), other values application-specific",
-         UintegerValue(0), MakeUintegerAccessor(&Producer::m_signature),
+         UintegerValue(0), MakeUintegerAccessor(&ProducerDelay::m_signature),
          MakeUintegerChecker<uint32_t>())
       .AddAttribute("KeyLocator",
                     "Name to be used for key locator.  If root, then key locator is not used",
-                    NameValue(), MakeNameAccessor(&Producer::m_keyLocator), MakeNameChecker());
+                    NameValue(), MakeNameAccessor(&ProducerDelay::m_keyLocator), MakeNameChecker())
+      .AddAttribute("Delay", "Delay in response", 
+                    TimeValue(Seconds(0)), MakeTimeAccessor(&ProducerDelay::m_delay),
+                    MakeTimeChecker());
   return tid;
 }
 
-Producer::Producer()
+ProducerDelay::ProducerDelay()
 {
   NS_LOG_FUNCTION_NOARGS();
 }
 
 // inherited from Application base class.
 void
-Producer::StartApplication()
+ProducerDelay::StartApplication()
 {
   NS_LOG_FUNCTION_NOARGS();
   App::StartApplication();
@@ -83,7 +86,7 @@ Producer::StartApplication()
 }
 
 void
-Producer::StopApplication()
+ProducerDelay::StopApplication()
 {
   NS_LOG_FUNCTION_NOARGS();
 
@@ -91,7 +94,7 @@ Producer::StopApplication()
 }
 
 void
-Producer::OnInterest(shared_ptr<const Interest> interest)
+ProducerDelay::OnInterest(shared_ptr<const Interest> interest)
 {
   App::OnInterest(interest); // tracing inside
 
@@ -129,8 +132,10 @@ Producer::OnInterest(shared_ptr<const Interest> interest)
   data->wireEncode();
 
 
-  m_transmittedDatas(data, this, m_face);
-  m_appLink->onReceiveData(*data);
+  Simulator::Schedule(m_delay, [data,this]{m_transmittedDatas(data, this, m_face);});
+  Simulator::Schedule(m_delay, [data,this]{m_appLink->onReceiveData(*data);});
+  //m_transmittedDatas(data, this, m_face);
+  //m_appLink->onReceiveData(*data);
 }
 
 } // namespace ndn

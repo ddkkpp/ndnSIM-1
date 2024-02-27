@@ -14,17 +14,22 @@ router
 8	NA	10	40
 9	NA	10	20
 10	NA	10	0
+11  NA  80  90
+12  NA  10  90
 
 link
 
 # from	    to		capacity	metric	delay	queue
-0	    5	1Gbps		1	10ms	1000
-1	    5	1Gbps		1	10ms	1000
-2	    5	1Gbps		1	10ms	1000
-3	    5	1Gbps		1	10ms	1000
-4	    5	1Gbps		1	10ms	1000
-6	    5	1Gbps		1	100ms	1000
-7	    5	1Gbps		1	100ms	1000
-8	    5	1Gbps		1	100ms	1000
-9	    5	1Gbps		1	100ms	1000
-10	    5	1Gbps		1	100ms	1000
+0	    5	5Mbps		1	10ms	1000
+1	    5	5Mbps		1	10ms	1000
+2	    5	5Mbps		1	10ms	1000
+3	    5	5Mbps		1	10ms	1000
+4	    5	5Mbps		1	10ms	1000
+5	    6	5Mbps		1	10ms	1000
+5	    7	4000Kbps		1	10ms	1000
+5	    8	4400Kbps		1	10ms	1000
+5	    9	4800Kbps		1	10ms	1000
+5	    10	5000Kbps		1	10ms	1000
+11      5   5Mbps       1   10ms    1000
+5       12  5Mbps       1   10ms    1000
+#注意link中两节点顺序，forwarder中onIncomingInterest中mynodeid是取的第二个节点

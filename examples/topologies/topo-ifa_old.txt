@@ -1,0 +1,33 @@
+
+
+router
+
+#node	city	y	x
+0	NA	80	80
+1	NA	80	60
+2	NA	80	40
+3	NA	80	20
+4	NA	80	0
+5	NA	50	50
+6	NA	10	80
+7	NA	10	60
+8	NA	10	40
+9	NA	10	20
+10	NA	10	0
+11  NA  40  50
+
+link
+
+# from	    to		capacity	metric	delay	queue
+0	    5	10Mbps		1	10ms	1000
+1	    5	10Mbps		1	10ms	1000
+2	    5	10Mbps		1	10ms	1000
+3	    5	10Mbps		1	10ms	1000
+4	    5	10Mbps		1	10ms	1000
+5       11  30Mbps      1   5ms     1000
+11	    6	10Mbps		1	5ms	    1000
+11	    7	10Mbps		1	5ms	    1000
+11	    8	10Mbps		1	5ms	    1000
+11	    9	10Mbps		1	5ms	    1000
+11	    10	10Mbps		1	5ms	    1000
+#注意link中两节点顺序，forwarder中onIncomingInterest中mynodeid是取的第二个节点

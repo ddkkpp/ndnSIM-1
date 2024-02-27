@@ -46,17 +46,28 @@ NS_OBJECT_ENSURE_REGISTERED(Consumer);
 
 void computeISRWDCallback(Consumer *ptr)
 {
-  if(ptr->m_numOfReceivedData==0){
-    NS_LOG_DEBUG("没有 data返回)");
+  NS_LOG_DEBUG("throughput: "<<double(ptr->m_numOfReceivedData));
+  if(ptr->m_numOfSentInterests==0){
+    NS_LOG_DEBUG("没有发interest)");
+  }
+  else if(ptr->m_numOfReceivedData==0){
+    NS_LOG_DEBUG("没有收到data");
+    NS_LOG_DEBUG("ISR in this period = "<<double(ptr->m_numOfReceivedData) / double(ptr->m_numOfSentInterests));
   }
   else{
     NS_LOG_DEBUG("ISR in this period = "<<double(ptr->m_numOfReceivedData) / double(ptr->m_numOfSentInterests));
-    NS_LOG_DEBUG("rtt in this period = "<<ptr->m_sumRetrievalTime.GetMilliSeconds() / ptr->m_numOfSentInterests);
+    //rtt在瓶颈统计
+    // if((double(ptr->m_numOfReceivedData) / double(ptr->m_numOfSentInterests))<0.9){
+    //   NS_LOG_DEBUG("rtt in this period = "<<(ptr->m_sumRetrievalTime +(int(ptr->m_numOfSentInterests) - int(ptr->m_numOfReceivedData))*ns3::Seconds(2)).GetMilliSeconds()/ ptr->m_numOfSentInterests);
+    // }
+    // else{
+    //   NS_LOG_DEBUG("rtt in this period = "<<(ptr->m_sumRetrievalTime).GetMilliSeconds()/ ptr->m_numOfReceivedData);
+    // }
   }
   ptr->m_numOfSentInterests=0;
   ptr->m_numOfReceivedData=0;
   ptr->m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
-  ptr->computeISRWD.Ping(MilliSeconds(500));
+  ptr->computeISRWD.Ping(MilliSeconds(1000));
 }
 
 TypeId
@@ -81,7 +92,7 @@ Consumer::GetTypeId(void)
                     MakeTimeChecker())
 
       .AddAttribute("WatchDog", "",
-                                  DoubleValue(500),
+                                  DoubleValue(1000),
                                   MakeDoubleAccessor(&Consumer::SetWatchDog),
                                   MakeDoubleChecker<double>())
 
@@ -144,7 +155,7 @@ Consumer::CheckRetxTimeout()
   Time now = Simulator::Now();
 
   Time rto = m_rtt->RetransmitTimeout();
-  //NS_LOG_DEBUG ("Current RTO: " << rto.ToDouble (Time::S) << "s");
+  NS_LOG_DEBUG ("Current RTO: " << rto.ToDouble (Time::S) << "s");
 
   while (!m_seqTimeouts.empty()) {
     SeqTimeoutsContainer::index<i_timestamp>::type::iterator entry =
@@ -192,7 +203,7 @@ Consumer::SendPacket()
   if (!m_active)
     return;
 
-  NS_LOG_FUNCTION_NOARGS();
+  //NS_LOG_FUNCTION_NOARGS();
 
   uint32_t seq = std::numeric_limits<uint32_t>::max(); // invalid
 
@@ -225,7 +236,7 @@ Consumer::SendPacket()
   time::milliseconds interestLifeTime(m_interestLifeTime.GetMilliSeconds());
   interest->setInterestLifetime(interestLifeTime);
 
-  // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
+  NS_LOG_INFO ("Requesting Interest: \n" << *interest);
   NS_LOG_INFO("> Interest for " << seq);
 
   ++m_numOfSentInterests;
@@ -306,7 +317,7 @@ Consumer::OnNack(shared_ptr<const lp::Nack> nack)
 void
 Consumer::OnTimeout(uint32_t sequenceNumber)
 {
-  NS_LOG_FUNCTION(sequenceNumber);
+  //NS_LOG_FUNCTION(sequenceNumber);
   // std::cout << Simulator::Now () << ", TO: " << sequenceNumber << ", current RTO: " <<
   // m_rtt->RetransmitTimeout ().ToDouble (Time::S) << "s\n";
 
@@ -320,8 +331,7 @@ Consumer::OnTimeout(uint32_t sequenceNumber)
 void
 Consumer::WillSendOutInterest(uint32_t sequenceNumber)
 {
-  NS_LOG_DEBUG("Trying to add " << sequenceNumber << " with " << Simulator::Now() << ". already "
-                                << m_seqTimeouts.size() << " items");
+  //NS_LOG_DEBUG("Trying to add " << sequenceNumber << " with " << Simulator::Now() << ". already "<< m_seqTimeouts.size() << " items");
 
   m_seqTimeouts.insert(SeqTimeout(sequenceNumber, Simulator::Now()));
   m_seqFullDelay.insert(SeqTimeout(sequenceNumber, Simulator::Now()));

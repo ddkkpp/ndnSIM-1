@@ -28,13 +28,21 @@
 #include "ns3/ndnSIM/NFD/daemon/fw/strategy.hpp"
 #include "ns3/ndnSIM/NFD/daemon/fw/multicast-strategy.hpp"
 #include "common/global.hpp"
+#include "ns3/ndnSIM/apps/ndn-consumer-pcon.hpp"
 namespace ns3 {
 
 void IFA(Ptr<Node> consumer){
-    ndn::AppHelper consumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
-    consumerHelper.SetAttribute("Frequency", StringValue("10000")); // 100 interests a second
-    consumerHelper.SetAttribute("NumberOfContents", StringValue("1000000"));
+    ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCbr");
+    consumerHelper.SetAttribute("Frequency", StringValue("5000")); 
     consumerHelper.SetPrefix("/prefix0");
+    consumerHelper.Install(consumer);
+}
+
+
+void IFA2(Ptr<Node> consumer, std::string prefix){
+    ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCbr");
+    consumerHelper.SetAttribute("Frequency", StringValue("600")); 
+    consumerHelper.SetPrefix(prefix);
     consumerHelper.Install(consumer);
 }
     
@@ -52,7 +60,7 @@ main(int argc, char* argv[])
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
-  ndnHelper.setCsSize(1000);
+  ndnHelper.setCsSize(1);
   ndnHelper.InstallAll();
 
   // Set BestRoute strategy
@@ -69,23 +77,33 @@ main(int argc, char* argv[])
   producerNodes.Add(Names::Find<Node>("8"));
   producerNodes.Add(Names::Find<Node>("9"));
   producerNodes.Add(Names::Find<Node>("10"));
+  producerNodes.Add(Names::Find<Node>("12"));
 
 
- Ptr<Node> consumers[5] = {Names::Find<Node>("0"), Names::Find<Node>("1"),
-                            Names::Find<Node>("2"), Names::Find<Node>("3"), Names::Find<Node>("4")};
- Ptr<Node> producer[5] = {Names::Find<Node>("6"), Names::Find<Node>("7"),
-                            Names::Find<Node>("8"), Names::Find<Node>("9"), Names::Find<Node>("10")};
+ Ptr<Node> consumers[6] = {Names::Find<Node>("0"), Names::Find<Node>("1"),
+                            Names::Find<Node>("2"), Names::Find<Node>("3"), Names::Find<Node>("4"), Names::Find<Node>("11")};
+ Ptr<Node> producer[6] = {Names::Find<Node>("6"), Names::Find<Node>("7"),
+                            Names::Find<Node>("8"), Names::Find<Node>("9"), Names::Find<Node>("10"), Names::Find<Node>("12")};
   
-
+ 
   for (int i = 1; i < 5; i++) {
-    ndn::AppHelper consumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
-    consumerHelper.SetAttribute("Frequency", StringValue("100")); // 100 interests a second
-    consumerHelper.SetAttribute("NumberOfContents", StringValue("100000"));
+    //正常用户pcon
+    // ndn::AppHelper consumerHelper("ns3::ndn::ConsumerPcon");
+    // consumerHelper.SetAttribute("CcAlgorithm",EnumValue(ndn::CcAlgorithm::CUBIC));
+    // consumerHelper.SetAttribute("Beta",DoubleValue(0.5));//StringValue(std::to_string(0.5))
+    // //consumerHelper.SetAttribute("CubicBeta",DoubleValue(0.8));
+    // consumerHelper.SetPrefix("/prefix" + Names::FindName(consumers[i]));
+    // consumerHelper.SetAttribute("ReactToCongestionMarks",BooleanValue(true));
+    // consumerHelper.Install(consumers[i]);
+
+    //正常用户contant rate
+    ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCbr");
+    consumerHelper.SetAttribute("Frequency", StringValue("100")); 
     consumerHelper.SetPrefix("/prefix" + Names::FindName(consumers[i]));
     consumerHelper.Install(consumers[i]);
   }
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 1; i < 5; i++) {
     ndn::AppHelper producerHelper("ns3::ndn::Producer");
     producerHelper.SetPrefix("/prefix" + Names::FindName(consumers[i]));
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
@@ -93,13 +111,33 @@ main(int argc, char* argv[])
     ndnGlobalRoutingHelper.AddOrigins("/prefix" + Names::FindName(consumers[i]), producer[i]);
   }
   
+    ndn::AppHelper producerHelper("ns3::ndn::ProducerDelay");
+    producerHelper.SetPrefix("/prefix" + Names::FindName(consumers[0]));
+    producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
+    producerHelper.SetAttribute("Delay", TimeValue(MilliSeconds(2000)));//高速
+    //producerHelper.SetAttribute("Delay", TimeValue(MilliSeconds(1900)));//低速
+    producerHelper.Install(producer[0]);
+    ndnGlobalRoutingHelper.AddOrigins("/prefix" + Names::FindName(consumers[0]), producer[0]);
+
+    //ndn::AppHelper producerHelper("ns3::ndn::ProducerDelay");
+    producerHelper.SetPrefix("/prefix5");
+    producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
+    producerHelper.SetAttribute("Delay", TimeValue(MilliSeconds(2000)));//高速
+    //producerHelper.SetAttribute("Delay", TimeValue(MilliSeconds(1900)));//低速
+    producerHelper.Install(producer[5]);
+    ndnGlobalRoutingHelper.AddOrigins("/prefix5", producer[5]);
+  
 
   // Calculate and install FIBs
   //ndn::GlobalRoutingHelper::CalculateRoutes();
   ndnGlobalRoutingHelper.CalculateAllPossibleRoutes();
 
  //void (*p)(Ptr<Node>, const ndn::Name&, const ndn::Name&)=&ndn::AppHelper::Install;
+ //一个高速攻击者
   Simulator::Schedule(Seconds(5),[consumers]{IFA(consumers[0]);});
+  //两个低速攻击者
+  // Simulator::Schedule(MilliSeconds(5000),[consumers]{IFA2(consumers[0], "/prefix0");});
+  // Simulator::Schedule(MilliSeconds(5001),[consumers]{IFA2(consumers[5], "/prefix5");});
 
 
 
