@@ -55,7 +55,8 @@ main(int argc, char* argv[])
   cmd.Parse(argc, argv);
 
   AnnotatedTopologyReader topologyReader("", 25);
-  topologyReader.SetFileName("src/ndnSIM/examples/topologies/topo-ifa.txt");
+  //topologyReader.SetFileName("src/ndnSIM/examples/topologies/topo-ifa.txt");
+  topologyReader.SetFileName("/home/dkp/BRITE/DFN.txt");
   topologyReader.Read();
 
   // Install NDN stack on all nodes
@@ -72,18 +73,17 @@ main(int argc, char* argv[])
 
   // Getting containers for the consumer/producer
   NodeContainer producerNodes;
-  producerNodes.Add(Names::Find<Node>("6"));
-  producerNodes.Add(Names::Find<Node>("7"));
-  producerNodes.Add(Names::Find<Node>("8"));
-  producerNodes.Add(Names::Find<Node>("9"));
-  producerNodes.Add(Names::Find<Node>("10"));
+  producerNodes.Add(Names::Find<Node>("15"));
+  producerNodes.Add(Names::Find<Node>("55"));
   producerNodes.Add(Names::Find<Node>("12"));
+  producerNodes.Add(Names::Find<Node>("10"));
+  producerNodes.Add(Names::Find<Node>("16"));
 
 
- Ptr<Node> consumers[6] = {Names::Find<Node>("0"), Names::Find<Node>("1"),
-                            Names::Find<Node>("2"), Names::Find<Node>("3"), Names::Find<Node>("4"), Names::Find<Node>("11")};
- Ptr<Node> producer[6] = {Names::Find<Node>("6"), Names::Find<Node>("7"),
-                            Names::Find<Node>("8"), Names::Find<Node>("9"), Names::Find<Node>("10"), Names::Find<Node>("12")};
+ Ptr<Node> consumers[5] = {Names::Find<Node>("5"), Names::Find<Node>("6"),
+                            Names::Find<Node>("50"), Names::Find<Node>("49"), Names::Find<Node>("7")};
+ Ptr<Node> producer[5] = {Names::Find<Node>("15"), Names::Find<Node>("55"),
+                            Names::Find<Node>("12"), Names::Find<Node>("10"), Names::Find<Node>("16")};
   
  
   // for (int i = 1; i < 5; i++) {
@@ -103,75 +103,67 @@ main(int argc, char* argv[])
   //   // consumerHelper.Install(consumers[i]);
   // }
 
-//两恒速用户，两pcon用户
-  for (int i = 1; i < 3; i++) {
     //正常用户pcon
-    ndn::AppHelper consumerHelper("ns3::ndn::ConsumerPcon");
-    consumerHelper.SetAttribute("CcAlgorithm",EnumValue(ndn::CcAlgorithm::CUBIC));
-    consumerHelper.SetAttribute("Beta",DoubleValue(0.5));//StringValue(std::to_string(0.5))
-    //consumerHelper.SetAttribute("CubicBeta",DoubleValue(0.8));
-    consumerHelper.SetPrefix("/prefix" + Names::FindName(consumers[i]));
-    consumerHelper.SetAttribute("ReactToCongestionMarks",BooleanValue(true));
-    consumerHelper.Install(consumers[i]);
-  }
+    // ndn::AppHelper consumerHelper("ns3::ndn::ConsumerPcon");
+    // consumerHelper.SetAttribute("CcAlgorithm",EnumValue(ndn::CcAlgorithm::CUBIC));
+    // consumerHelper.SetAttribute("Beta",DoubleValue(0.5));//StringValue(std::to_string(0.5))
+    // //consumerHelper.SetAttribute("CubicBeta",DoubleValue(0.8));
+    // consumerHelper.SetPrefix("/prefix1");
+    // consumerHelper.SetAttribute("ReactToCongestionMarks",BooleanValue(true));
+    // consumerHelper.Install(Names::Find<Node>("5"));
+
 
     //正常用户contant rate
-    ndn::AppHelper consumerHelper2("ns3::ndn::ConsumerCbr");
-    consumerHelper2.SetAttribute("Frequency", StringValue("100")); 
-    consumerHelper2.SetPrefix("/prefix" + Names::FindName(consumers[3]));
-    consumerHelper2.Install(consumers[3]);
-    consumerHelper2.SetAttribute("Frequency", StringValue("150")); 
-    consumerHelper2.SetPrefix("/prefix" + Names::FindName(consumers[4]));
-    consumerHelper2.Install(consumers[4]);
+    ndn::AppHelper consumerHelper1("ns3::ndn::ConsumerCbr");
+    consumerHelper1.SetAttribute("Frequency", StringValue("200")); 
+    consumerHelper1.SetPrefix("/prefix1");
+    consumerHelper1.Install(Names::Find<Node>("5"));
+    consumerHelper1.SetPrefix("/prefix2");
+    consumerHelper1.Install(Names::Find<Node>("6"));
+    consumerHelper1.SetPrefix("/prefix3");
+    consumerHelper1.Install(Names::Find<Node>("50"));
 
     //攻击者
-    ndn::AppHelper consumerHelper1("ns3::ndn::ConsumerCbr");
-    consumerHelper1.SetAttribute("StartTime", TimeValue(Seconds(5)));
+    ndn::AppHelper consumerHelper2("ns3::ndn::ConsumerCbr");
+    consumerHelper2.SetAttribute("StartTime", TimeValue(Seconds(5)));
     //consumerHelper1.SetAttribute("StopTime", TimeValue(Seconds(35.01)));
-    //高速
-    // consumerHelper1.SetAttribute("Frequency", StringValue("5000")); 
-    // consumerHelper1.SetPrefix("/prefix0");
-    // consumerHelper1.Install(consumers[0]);
-    //低速
-    consumerHelper1.SetAttribute("Frequency", StringValue("600")); 
-    consumerHelper1.SetPrefix("/prefix0");
-    consumerHelper1.Install(consumers[0]);
-    consumerHelper1.SetAttribute("StartTime", TimeValue(Seconds(5.001)));
-    consumerHelper1.SetPrefix("/prefix5");
-    consumerHelper1.Install(consumers[5]);
+    consumerHelper2.SetAttribute("Frequency", StringValue("5000")); 
+    consumerHelper2.SetPrefix("/prefix4");
+    consumerHelper2.Install(Names::Find<Node>("49"));
+    // consumerHelper2.SetPrefix("/prefix5");
+    // consumerHelper2.Install(Names::Find<Node>("7"));
 
-  //正常发布商
-  for (int i = 1; i < 5; i++) {
+//正常发布商
+  for (int i = 0; i < 3; i++) {
     ndn::AppHelper producerHelper("ns3::ndn::Producer");
-    producerHelper.SetPrefix("/prefix" + Names::FindName(consumers[i]));
+    producerHelper.SetPrefix("/prefix" + std::to_string(i+1));
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
     producerHelper.Install(producer[i]);
-    ndnGlobalRoutingHelper.AddOrigins("/prefix" + Names::FindName(consumers[i]), producer[i]);
+    ndnGlobalRoutingHelper.AddOrigins("/prefix" + std::to_string(i+1), producer[i]);
   }
   
-    
   //高速延迟2000ms发布商
-    // ndn::AppHelper producerHelper("ns3::ndn::ProducerDelay");
-    // producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
-    // producerHelper.SetAttribute("Delay", TimeValue(MilliSeconds(2000)));
-    // producerHelper.SetPrefix("/prefix" + Names::FindName(consumers[0]));
-    // producerHelper.Install(producer[0]);
-    // ndnGlobalRoutingHelper.AddOrigins("/prefix" + Names::FindName(consumers[0]), producer[0]);
-    // producerHelper.SetPrefix("/prefix5");
-    // producerHelper.Install(producer[5]);
-    // ndnGlobalRoutingHelper.AddOrigins("/prefix5", producer[5]);
-
-  //低速延迟1900ms发布商
     ndn::AppHelper producerHelper("ns3::ndn::ProducerDelay");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
-    producerHelper.SetAttribute("Delay", TimeValue(MilliSeconds(1900)));
-    producerHelper.SetPrefix("/prefix" + Names::FindName(consumers[0]));
-    producerHelper.Install(producer[0]);
-    ndnGlobalRoutingHelper.AddOrigins("/prefix" + Names::FindName(consumers[0]), producer[0]);
+    producerHelper.SetAttribute("Delay", TimeValue(MilliSeconds(2000)));
+    producerHelper.SetPrefix("/prefix4");
+    producerHelper.Install(producer[3]);
+    ndnGlobalRoutingHelper.AddOrigins("/prefix4", producer[3]);
     producerHelper.SetPrefix("/prefix5");
-    producerHelper.Install(producer[5]);
-    ndnGlobalRoutingHelper.AddOrigins("/prefix5", producer[5]);
+    producerHelper.Install(producer[4]);
+    ndnGlobalRoutingHelper.AddOrigins("/prefix5", producer[4]);
 
+  //低速延迟1900ms发布商
+    // ndn::AppHelper producerHelper("ns3::ndn::ProducerDelay");
+    // producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
+    // producerHelper.SetAttribute("Delay", TimeValue(MilliSeconds(1900)));
+    // producerHelper.SetPrefix("/prefix4");
+    // producerHelper.Install(producer[3]);
+    // ndnGlobalRoutingHelper.AddOrigins("/prefix4", producer[3]);
+    // producerHelper.SetPrefix("/prefix5");
+    // producerHelper.Install(producer[4]);
+    // ndnGlobalRoutingHelper.AddOrigins("/prefix5", producer[4]);
+  
 
   // Calculate and install FIBs
   //ndn::GlobalRoutingHelper::CalculateRoutes();
@@ -186,7 +178,7 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(50));
+  Simulator::Stop(Seconds(15.01));
 
   Simulator::Run();
   Simulator::Destroy();
