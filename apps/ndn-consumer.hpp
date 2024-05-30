@@ -155,6 +155,7 @@ protected:
   uint32_t m_numOfReceivedData=0;
   uint32_t m_numOfReceivedValidData=0;
   Time m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
+  uint32_t m_verificationTimes=0;
   /// @cond include_hidden
   /**
    * \struct This struct contains sequence numbers of packets to be retransmitted

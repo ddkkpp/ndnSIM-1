@@ -47,7 +47,7 @@ main(int argc, char* argv[])
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
-  ndnHelper.setCsSize(1000);
+  ndnHelper.setCsSize(800);
   ndnHelper.InstallAll();
 
   // Set BestRoute strategy
@@ -66,7 +66,9 @@ main(int argc, char* argv[])
 
 
   NodeContainer consumerNodes;
-  consumerNodes.Add(Names::Find<Node>("9"));
+  //consumerNodes.Add(Names::Find<Node>("15"));
+  // consumerNodes.Add(Names::Find<Node>("55"));
+  consumerNodes.Add(Names::Find<Node>("8"));
 
   // Install NDN applications
   std::string prefix = "/prefix";
@@ -76,7 +78,7 @@ main(int argc, char* argv[])
   consumerHelper.SetAttribute("Frequency", StringValue("100")); // 10000 interests a second//不能超过带宽
   consumerHelper.SetAttribute("NumberOfContents",StringValue("100000"));
   consumerHelper.SetAttribute("q",StringValue("1"));
-  consumerHelper.SetAttribute("s",StringValue("1.1"));
+  consumerHelper.SetAttribute("s",StringValue("0.9"));
   consumerHelper.Install(consumerNodes);
 
 
@@ -94,7 +96,8 @@ main(int argc, char* argv[])
   ndnGlobalRoutingHelper.CalculateAllPossibleRoutes();
 
  void (*p)(Ptr<Node>, const ndn::Name&, const ndn::Name&)=&ndn::StrategyChoiceHelper::Install;
-Simulator::Schedule(Seconds(10),p, Names::Find<Node>("41"), "/","/localhost/nfd/strategy/mal-best-route");
+Simulator::Schedule(Seconds(10),p, Names::Find<Node>("49"), "/","/localhost/nfd/strategy/mal-best-route");
+//Simulator::Schedule(Seconds(10),p, Names::Find<Node>("40"), "/","/localhost/nfd/strategy/mal-best-route");
 
  void (*q)(Ptr<Node>, const ndn::Name&, const ndn::Name&)=&ndn::StrategyChoiceHelper::Install;
  //ELC

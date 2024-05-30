@@ -46,6 +46,7 @@ NS_OBJECT_ENSURE_REGISTERED(Consumer);
 
 void computeISRWDCallback(Consumer *ptr)
 {
+  NS_LOG_DEBUG("m_verificationTime in this period = "<<ptr->m_verificationTimes*4.9);
   NS_LOG_DEBUG("m_numOfSentInterests in this period = "<<ptr->m_numOfSentInterests);
   NS_LOG_DEBUG("m_numOfReceivedData in this period = "<<ptr->m_numOfReceivedData);
   NS_LOG_DEBUG("m_numOfReceivedValidData in this period = "<<ptr->m_numOfReceivedValidData);
@@ -62,6 +63,7 @@ void computeISRWDCallback(Consumer *ptr)
   else{
     NS_LOG_DEBUG("retrievalTime in this period = "<<ptr->m_sumRetrievalTime.GetMilliSeconds() / ptr->m_numOfReceivedValidData);
   }
+  ptr->m_verificationTimes=0;
   ptr->m_numOfSentInterests=0;
   ptr->m_numOfReceivedData=0;
   ptr->m_numOfReceivedValidData=0;
@@ -154,7 +156,7 @@ Consumer::CheckRetxTimeout()
   Time now = Simulator::Now();
 
   Time rto = m_rtt->RetransmitTimeout();
-  NS_LOG_DEBUG ("Current RTO: " << rto.ToDouble (Time::S) << "s");
+  //NS_LOG_DEBUG ("Current RTO: " << rto.ToDouble (Time::S) << "s");
 
   while (!m_seqTimeouts.empty()) {
     SeqTimeoutsContainer::index<i_timestamp>::type::iterator entry =
@@ -235,11 +237,11 @@ Consumer::SendPacket()
   time::milliseconds interestLifeTime(m_interestLifeTime.GetMilliSeconds());
   interest->setInterestLifetime(interestLifeTime);
 
-  // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
-  NS_LOG_INFO("> Interest for " << seq);
+   //NS_LOG_INFO ("Requesting Interest: \n" << *interest);
+  //NS_LOG_INFO("> Interest for " << seq);
 
   // ++m_numOfSentInterests;
-  // NS_LOG_DEBUG("发送兴趣, m_numOfSentInterests="<<m_numOfSentInterests);
+  // //NS_LOG_DEBUG("发送兴趣, m_numOfSentInterests="<<m_numOfSentInterests);
 
   WillSendOutInterest(seq);
 
@@ -263,41 +265,45 @@ Consumer::OnData(shared_ptr<const Data> data)
   App::OnData(data); // tracing inside
 
   ++m_numOfReceivedData;
-  NS_LOG_DEBUG("收到数据, m_numOfReceivedData="<<m_numOfReceivedData);
+  //NS_LOG_DEBUG("收到数据, m_numOfReceivedData="<<m_numOfReceivedData);
   if(data->getSignatureInfo().getSignatureType()==255){
     ++m_numOfReceivedValidData;
-    NS_LOG_DEBUG("收到真实数据, m_numOfReceivedValidData="<<m_numOfReceivedValidData);
+    //NS_LOG_DEBUG("收到真实数据, m_numOfReceivedValidData="<<m_numOfReceivedValidData);
   }
-  NS_LOG_FUNCTION(this << data);
+  //NS_LOG_FUNCTION(this << data);
 
-  // NS_LOG_INFO ("Received content object: " << boost::cref(*data));
+   //NS_LOG_INFO ("Received content object: " << boost::cref(*data));
 
   // This could be a problem......
   uint32_t seq = data->getName().at(-1).toSequenceNumber();
-  NS_LOG_INFO("< DATA for " << seq);
+  //NS_LOG_INFO("< DATA for " << seq);
 
   int hopCount = 0;
   auto hopCountTag = data->getTag<lp::HopCountTag>();
   if (hopCountTag != nullptr) { // e.g., packet came from local node's cache
     hopCount = *hopCountTag;
   }
-  NS_LOG_DEBUG("Hop count: " << hopCount);
+  //NS_LOG_DEBUG("Hop count: " << hopCount);
 
   SeqTimeoutsContainer::iterator entry = m_seqLastDelay.find(seq);
   if (entry != m_seqLastDelay.end()) {
-    m_lastRetransmittedInterestDataDelay(this, seq, Simulator::Now() - entry->time + MilliSeconds(*(data->getTag<lp::ExtraDelayTag>())) , hopCount);
+    //m_lastRetransmittedInterestDataDelay(this, seq, Simulator::Now() - entry->time + MilliSeconds(*(data->getTag<lp::ExtraDelayTag>())) , hopCount);
+    m_lastRetransmittedInterestDataDelay(this, seq, Simulator::Now() - entry->time , hopCount);
   }
 
   entry = m_seqFullDelay.find(seq);
   if (entry != m_seqFullDelay.end()) {
-    m_firstInterestDataDelay(this, seq, Simulator::Now() - entry->time + MilliSeconds(*(data->getTag<lp::ExtraDelayTag>())), m_seqRetxCounts[seq], hopCount);
-    m_sumRetrievalTime=m_sumRetrievalTime + Simulator::Now() - entry->time + MilliSeconds(*(data->getTag<lp::ExtraDelayTag>()));
-    NS_LOG_DEBUG("m_sumRetrievalTime= "<<m_sumRetrievalTime.GetMilliSeconds());
+    // m_firstInterestDataDelay(this, seq, Simulator::Now() - entry->time + MilliSeconds(*(data->getTag<lp::ExtraDelayTag>())), m_seqRetxCounts[seq], hopCount);
+    // m_sumRetrievalTime=m_sumRetrievalTime + Simulator::Now() - entry->time + MilliSeconds(*(data->getTag<lp::ExtraDelayTag>()));
+    m_firstInterestDataDelay(this, seq, Simulator::Now() - entry->time, m_seqRetxCounts[seq], hopCount);
+    m_sumRetrievalTime=m_sumRetrievalTime + Simulator::Now() - entry->time;
+    //NS_LOG_DEBUG("m_sumRetrievalTime= "<<m_sumRetrievalTime.GetMilliSeconds());
   } 
 
   //验证次数
   int verificationTimes=(*(data->getTag<lp::ExtraDelayTag>()))/4;
-  NS_LOG_DEBUG("verificationTimes: " << verificationTimes);
+  //NS_LOG_DEBUG("verificationTimes: " << verificationTimes);
+  m_verificationTimes+=verificationTimes;
 
   m_seqRetxCounts.erase(seq);
   m_seqFullDelay.erase(seq);
@@ -336,8 +342,7 @@ Consumer::OnTimeout(uint32_t sequenceNumber)
 void
 Consumer::WillSendOutInterest(uint32_t sequenceNumber)
 {
-  NS_LOG_DEBUG("Trying to add " << sequenceNumber << " with " << Simulator::Now() << ". already "
-                                << m_seqTimeouts.size() << " items");
+  //NS_LOG_DEBUG("Trying to add " << sequenceNumber << " with " << Simulator::Now() << ". already "<< m_seqTimeouts.size() << " items");
 
   m_seqTimeouts.insert(SeqTimeout(sequenceNumber, Simulator::Now()));
   m_seqFullDelay.insert(SeqTimeout(sequenceNumber, Simulator::Now()));
