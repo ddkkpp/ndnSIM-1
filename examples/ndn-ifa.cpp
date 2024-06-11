@@ -126,19 +126,32 @@ main(int argc, char* argv[])
 
     //攻击者
     ndn::AppHelper consumerHelper1("ns3::ndn::ConsumerCbr");
-    consumerHelper1.SetAttribute("StartTime", TimeValue(Seconds(5)));
     //consumerHelper1.SetAttribute("StopTime", TimeValue(Seconds(35.01)));
     //高速
+    // consumerHelper1.SetAttribute("StartTime", TimeValue(Seconds(5)));
     // consumerHelper1.SetAttribute("Frequency", StringValue("5000")); 
     // consumerHelper1.SetPrefix("/prefix0");
     // consumerHelper1.Install(consumers[0]);
     //低速
-    consumerHelper1.SetAttribute("Frequency", StringValue("600")); 
-    consumerHelper1.SetPrefix("/prefix0");
-    consumerHelper1.Install(consumers[0]);
-    consumerHelper1.SetAttribute("StartTime", TimeValue(Seconds(5.001)));
-    consumerHelper1.SetPrefix("/prefix5");
-    consumerHelper1.Install(consumers[5]);
+    // consumerHelper1.SetAttribute("StartTime", TimeValue(Seconds(5)));
+    // consumerHelper1.SetAttribute("Frequency", StringValue("600")); 
+    // consumerHelper1.SetPrefix("/prefix0");
+    // consumerHelper1.Install(consumers[0]);
+    // consumerHelper1.SetAttribute("StartTime", TimeValue(Seconds(5.001)));
+    // consumerHelper1.SetPrefix("/prefix5");
+    // consumerHelper1.Install(consumers[5]);
+    //m-cifa
+    ndn::AppHelper consumerHelper3("ns3::ndn::ConsumerPulse");
+    consumerHelper3.SetAttribute("StartTime", TimeValue(Seconds(5)));
+    consumerHelper3.SetAttribute("period", TimeValue(Seconds(1.5))); 
+    consumerHelper3.SetAttribute("sendTime", TimeValue(Seconds(1))); 
+    consumerHelper3.SetAttribute("sendRate", UintegerValue(750)); 
+    consumerHelper3.SetAttribute("periodNum", UintegerValue(20)); 
+    consumerHelper3.SetPrefix("/prefix0");
+    consumerHelper3.Install(consumers[0]);
+    consumerHelper3.SetAttribute("StartTime", TimeValue(Seconds(5.001)));
+    consumerHelper3.SetPrefix("/prefix5");
+    consumerHelper3.Install(consumers[5]);
 
   //正常发布商
   for (int i = 1; i < 5; i++) {
@@ -162,9 +175,20 @@ main(int argc, char* argv[])
     // ndnGlobalRoutingHelper.AddOrigins("/prefix5", producer[5]);
 
   //低速延迟1900ms发布商
+    // ndn::AppHelper producerHelper("ns3::ndn::ProducerDelay");
+    // producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
+    // producerHelper.SetAttribute("Delay", TimeValue(MilliSeconds(1900)));
+    // producerHelper.SetPrefix("/prefix" + Names::FindName(consumers[0]));
+    // producerHelper.Install(producer[0]);
+    // ndnGlobalRoutingHelper.AddOrigins("/prefix" + Names::FindName(consumers[0]), producer[0]);
+    // producerHelper.SetPrefix("/prefix5");
+    // producerHelper.Install(producer[5]);
+    // ndnGlobalRoutingHelper.AddOrigins("/prefix5", producer[5]);
+
+    //m-cifa延迟发布商
     ndn::AppHelper producerHelper("ns3::ndn::ProducerDelay");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
-    producerHelper.SetAttribute("Delay", TimeValue(MilliSeconds(1900)));
+    producerHelper.SetAttribute("Delay", TimeValue(MilliSeconds(1300)));
     producerHelper.SetPrefix("/prefix" + Names::FindName(consumers[0]));
     producerHelper.Install(producer[0]);
     ndnGlobalRoutingHelper.AddOrigins("/prefix" + Names::FindName(consumers[0]), producer[0]);
@@ -186,7 +210,7 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(50));
+  Simulator::Stop(Seconds(20));
 
   Simulator::Run();
   Simulator::Destroy();

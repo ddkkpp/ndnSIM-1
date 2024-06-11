@@ -200,6 +200,7 @@ Consumer::StopApplication() // Called at time specified by Stop
 void
 Consumer::SendPacket()
 {
+  NS_LOG_DEBUG("m_seq = "<<m_seq<<" m_seqMax = "<<m_seqMax);
   if (!m_active)
     return;
 
@@ -207,6 +208,7 @@ Consumer::SendPacket()
 
   uint32_t seq = std::numeric_limits<uint32_t>::max(); // invalid
 
+  //注释掉此部分可避免重传
   while (m_retxSeqs.size()) {
     seq = *m_retxSeqs.begin();
     m_retxSeqs.erase(m_retxSeqs.begin());
