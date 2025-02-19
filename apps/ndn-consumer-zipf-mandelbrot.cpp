@@ -73,6 +73,9 @@ ConsumerZipfMandelbrot::~ConsumerZipfMandelbrot()
 void
 ConsumerZipfMandelbrot::SetNumberOfContents(uint32_t numOfContents)
 {
+  NS_LOG_LOGIC("m_frequency =" << m_frequency);
+  NS_LOG_LOGIC("m_randomType =" << m_randomType);
+
   m_N = numOfContents;
 
   NS_LOG_DEBUG(m_q << " and " << m_s << " and " << m_N);
@@ -229,9 +232,14 @@ ConsumerZipfMandelbrot::ScheduleNextPacket()
     m_firstTime = false;
   }
   else if (!m_sendEvent.IsRunning())
+  { 
+    auto delay = m_random->GetValue();
+    NS_LOG_DEBUG("m_frequency=" << m_frequency);
+    NS_LOG_DEBUG("delay=" << delay);
     m_sendEvent = Simulator::Schedule((m_random == 0) ? Seconds(1.0 / m_frequency)
-                                                      : Seconds(m_random->GetValue()),
+                                                      : Seconds(delay),
                                       &ConsumerZipfMandelbrot::SendPacket, this);
+  }
 }
 
 } /* namespace ndn */

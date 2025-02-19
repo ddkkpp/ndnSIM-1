@@ -1,0 +1,49 @@
+# topo-grid-3x3.txt
+
+
+# any empty lines and lines starting with '#' symbol is ignored
+#
+# The file should contain exactly two sections: router and link, each starting with the corresponding keyword
+#
+# router section defines topology nodes and their relative positions (e.g., to use in visualizer)
+router
+
+# each line in this section represents one router and should have the following data
+# node  comment     yPos    xPos
+0   NA          2       10
+1   NA          4       10
+2   NA          8       10
+3   NA          8       2
+4   NA          9       4
+5   NA          10       6
+6   NA          11       8
+7   NA          12       9
+8   NA          12       11
+9   NA          11       12
+10   NA          10       14
+11   NA          9       16
+12   NA          8       18
+# Note that `node` can be any string. It is possible to access to the node by name using Names::Find, see examples.
+
+# link section defines point-to-point links between nodes and characteristics of these links
+link
+
+# Each line should be in the following format (only first two are required, the rest can be omitted)
+# srcNode   dstNode     bandwidth   metric  delay   queue
+# bandwidth: link bandwidth
+# metric: routing metric
+# delay:  link delay
+# queue:  MaxPackets for transmission queue on the link (both directions)
+1       0       1Gbps       1       10ms    1000
+2       1       1Gbps       1       10ms    1000
+3       2       1Gbps       1       10ms    1000
+4       2        1Gbps       1       15ms    1000
+5       2        1Gbps       1       20ms    1000
+6       2        1Gbps       1       25ms    1000
+7       2        1Gbps       1       30ms    1000
+8       2        1Gbps       1       10ms    1000
+9       2        1Gbps       1       15ms    1000
+10      2        1Gbps       1       20ms    1000
+11      2        1Gbps       1       25ms    1000
+12      2        1Gbps       1       30ms    1000
+
