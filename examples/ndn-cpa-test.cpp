@@ -82,7 +82,7 @@ main(int argc, char* argv[])
     std::string frequencyValue = oss.str();
     consumerHelper.SetAttribute("Frequency", StringValue(frequencyValue)); 
     consumerHelper.SetAttribute("Randomize", StringValue("exponential"));
-    consumerHelper.SetAttribute("s", StringValue("1.0"));//每设置一次s或q或NumberOfContents，都会调用SetNumberOfContents进行流行度计算
+    consumerHelper.SetAttribute("s", StringValue("1"));//每设置一次s或q或NumberOfContents，都会调用SetNumberOfContents进行流行度计算
     consumerHelper.SetAttribute("NumberOfContents", StringValue("10000"));
     consumerHelper.Install(consumers[i]);
   }
@@ -98,7 +98,7 @@ main(int argc, char* argv[])
     consumerHelper.SetAttribute("tStep", TimeValue(Seconds(0.05)));
     consumerHelper.SetAttribute("MaxSeqA", UintegerValue(10000));
     consumerHelper.SetAttribute("range", UintegerValue(50));
-    consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(5)));
+    consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(200)));//攻击时刻
     consumerHelper.Install(consumers[i]);
   }
 
@@ -118,7 +118,7 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(20));
+  Simulator::Stop(Seconds(51));
 
   Simulator::Run();
   Simulator::Destroy();
