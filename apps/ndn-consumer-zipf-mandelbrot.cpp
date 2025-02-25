@@ -61,8 +61,10 @@ ConsumerZipfMandelbrot::ConsumerZipfMandelbrot()
   : m_N(100) // needed here to make sure when SetQ/SetS are called, there is a valid value of N
   , m_q(0.7)
   , m_s(0.7)
-  , m_seqRng(CreateObject<UniformRandomVariable>())
 {
+  //设置随机数生成器的种子
+  //ns3::RngSeedManager::SetSeed(static_cast<unsigned int>(std::time(0)));
+  m_seqRng = CreateObject<UniformRandomVariable>();
   // SetNumberOfContents is called by NS-3 object system during the initialization
 }
 
