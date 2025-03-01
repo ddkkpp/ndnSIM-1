@@ -44,8 +44,8 @@ main(int argc, char* argv[])
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
-  ndnHelper.setCsSize(100);
   ndnHelper.setPolicy("nfd::cs::lru");
+  ndnHelper.setCsSize(100);
   for(int i = 0; i <= 1; i++){
     ndnHelper.Install(Names::Find<Node>(std::to_string(i)));
   }
