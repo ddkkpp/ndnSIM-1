@@ -20,6 +20,7 @@
  **/
 
 #include "ndn-consumer-zipf-mandelbrot.hpp"
+#include <ndn-cxx/lp/tags.hpp>
 
 #include <math.h>
 
@@ -61,8 +62,10 @@ ConsumerZipfMandelbrot::ConsumerZipfMandelbrot()
   : m_N(100) // needed here to make sure when SetQ/SetS are called, there is a valid value of N
   , m_q(0.7)
   , m_s(0.7)
-  , m_seqRng(CreateObject<UniformRandomVariable>())
 {
+  //设置随机数生成器的种子
+  //ns3::RngSeedManager::SetSeed(static_cast<unsigned int>(std::time(0)));
+  m_seqRng = CreateObject<UniformRandomVariable>();
   // SetNumberOfContents is called by NS-3 object system during the initialization
 }
 
@@ -173,9 +176,14 @@ ConsumerZipfMandelbrot::SendPacket()
   nameWithSequence->appendSequenceNumber(seq);
   //
 
+  //需要先加上tag头文件
   shared_ptr<Interest> interest = make_shared<Interest>();
   interest->setNonce(m_rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setName(*nameWithSequence);
+
+  //加上ConsumerIdTag
+  auto nodeid = GetNode()->GetId();
+  interest->setTag(make_shared<ndn::lp::ConsumerIdTag>(nodeid));
 
   // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
   NS_LOG_INFO("> Interest for " << seq << ", Total: " << m_seq << ", face: " << m_face->getId());

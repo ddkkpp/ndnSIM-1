@@ -44,8 +44,9 @@ main(int argc, char* argv[])
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
+  //要在ndnSIM/helper/ndn-stack-helper.cpp中加上这个策略的头文件并m_csPolicies.insert
+  ndnHelper.setPolicy("nfd::cs::popularity");
   ndnHelper.setCsSize(100);
-  ndnHelper.setPolicy("nfd::cs::lru");
   for(int i = 0; i <= 1; i++){
     ndnHelper.Install(Names::Find<Node>(std::to_string(i)));
   }
@@ -82,7 +83,7 @@ main(int argc, char* argv[])
     std::string frequencyValue = oss.str();
     consumerHelper.SetAttribute("Frequency", StringValue(frequencyValue)); 
     consumerHelper.SetAttribute("Randomize", StringValue("exponential"));
-    consumerHelper.SetAttribute("s", StringValue("1.0"));//每设置一次s或q或NumberOfContents，都会调用SetNumberOfContents进行流行度计算
+    consumerHelper.SetAttribute("s", StringValue("1"));//每设置一次s或q或NumberOfContents，都会调用SetNumberOfContents进行流行度计算
     consumerHelper.SetAttribute("NumberOfContents", StringValue("10000"));
     consumerHelper.Install(consumers[i]);
   }
@@ -98,7 +99,7 @@ main(int argc, char* argv[])
     consumerHelper.SetAttribute("tStep", TimeValue(Seconds(0.05)));
     consumerHelper.SetAttribute("MaxSeqA", UintegerValue(10000));
     consumerHelper.SetAttribute("range", UintegerValue(50));
-    consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(5)));
+    consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(200)));//攻击时刻
     consumerHelper.Install(consumers[i]);
   }
 
@@ -119,6 +120,8 @@ main(int argc, char* argv[])
 
 
   Simulator::Stop(Seconds(20));
+
+  ndn::CsTracer::InstallAll("/media/sf_ndnsim/cs-trace.txt", Seconds(1));
 
   Simulator::Run();
   Simulator::Destroy();

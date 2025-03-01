@@ -36,6 +36,7 @@
 #include "ns3/uinteger.h"
 #include "ns3/double.h"
 #include "ns3/random-variable-stream.h"
+#include "ns3/rng-seed-manager.h"
 
 namespace ns3 {
 namespace ndn {
