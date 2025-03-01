@@ -45,7 +45,7 @@ main(int argc, char* argv[])
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
   //要在ndnSIM/helper/ndn-stack-helper.cpp中加上这个策略的头文件并m_csPolicies.insert
-  ndnHelper.setPolicy("nfd::cs::popularity");
+  ndnHelper.setPolicy("nfd::cs::lru");
   ndnHelper.setCsSize(100);
   for(int i = 0; i <= 1; i++){
     ndnHelper.Install(Names::Find<Node>(std::to_string(i)));

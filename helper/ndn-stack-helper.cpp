@@ -43,7 +43,6 @@
 #include "ns3/ndnSIM/NFD/daemon/face/generic-link-service.hpp"
 #include "ns3/ndnSIM/NFD/daemon/table/cs-policy-priority-fifo.hpp"
 #include "ns3/ndnSIM/NFD/daemon/table/cs-policy-lru.hpp"
-#include "ns3/ndnSIM/NFD/daemon/table/cs-policy-popularity.hpp"
 
 NS_LOG_COMPONENT_DEFINE("ndn.StackHelper");
 
@@ -59,7 +58,6 @@ StackHelper::StackHelper()
 
   m_csPolicies.insert({"nfd::cs::lru", [] { return make_unique<nfd::cs::LruPolicy>(); }});
   m_csPolicies.insert({"nfd::cs::priority_fifo", [] () { return make_unique<nfd::cs::PriorityFifoPolicy>(); }});
-  m_csPolicies.insert({"nfd::cs::popularity", [] () { return make_unique<nfd::cs::PopularityPolicy>(); }});
 
   m_csPolicyCreationFunc = m_csPolicies["nfd::cs::lru"];
 
