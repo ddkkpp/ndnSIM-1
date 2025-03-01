@@ -118,7 +118,7 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(51));
+  Simulator::Stop(Seconds(21));
 
   Simulator::Run();
   Simulator::Destroy();
