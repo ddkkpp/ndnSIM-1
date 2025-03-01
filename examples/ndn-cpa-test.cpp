@@ -119,7 +119,7 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(20));
+  Simulator::Stop(Seconds(51));
 
   ndn::CsTracer::InstallAll("/media/sf_ndnsim/cs-trace.txt", Seconds(1));
 
