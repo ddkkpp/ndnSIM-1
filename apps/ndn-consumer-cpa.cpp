@@ -17,7 +17,7 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#include "ndn-consumer-d2cpa.hpp"
+#include "ndn-consumer-cpa.hpp"
 #include "ns3/ptr.h"
 #include "ns3/log.h"
 #include "ns3/simulator.h"
@@ -31,39 +31,42 @@
 
 #include <ndn-cxx/lp/tags.hpp>
 
-NS_LOG_COMPONENT_DEFINE("ndn.ConsumerD2CPA");
+NS_LOG_COMPONENT_DEFINE("ndn.ConsumerCPA");
 
 namespace ns3 {
 namespace ndn {
 
-NS_OBJECT_ENSURE_REGISTERED(ConsumerD2CPA);
+NS_OBJECT_ENSURE_REGISTERED(ConsumerCPA);
 
 TypeId
-ConsumerD2CPA::GetTypeId(void)
+ConsumerCPA::GetTypeId(void)
 {
   static TypeId tid =
-    TypeId("ns3::ndn::ConsumerD2CPA")
+    TypeId("ns3::ndn::ConsumerCPA")
       .SetGroupName("Ndn")
       .SetParent<ConsumerCbr>()
-      .AddConstructor<ConsumerD2CPA>()
+      .AddConstructor<ConsumerCPA>()
 
-      .AddAttribute("vMax", "max send rate", UintegerValue(200), MakeUintegerAccessor(&ConsumerD2CPA::m_vMax),
+      .AddAttribute("vMax", "max send rate", UintegerValue(200), MakeUintegerAccessor(&ConsumerCPA::m_vMax),
                     MakeUintegerChecker<uint32_t>())
-        .AddAttribute("vStep", "value of send rate for each increment", UintegerValue(10), MakeUintegerAccessor(&ConsumerD2CPA::m_vStep),
+      .AddAttribute("isDynamic", "is rate Dynamic?", BooleanValue(false), 
+              MakeBooleanAccessor(&ConsumerCPA::m_isDynamic),
+              MakeBooleanChecker())
+        .AddAttribute("vStep", "value of send rate for each increment", UintegerValue(10), MakeUintegerAccessor(&ConsumerCPA::m_vStep),
                     MakeUintegerChecker<uint32_t>())
         .AddAttribute("tStep", "time between each send rate increase", TimeValue(Seconds(0.05)),
-            MakeTimeAccessor(&ConsumerD2CPA::m_tStep),
+            MakeTimeAccessor(&ConsumerCPA::m_tStep),
             MakeTimeChecker()) 
         .AddAttribute("MaxSeqA", "Maximum sequence number to request",
                     UintegerValue(10000),
-                    MakeUintegerAccessor(&ConsumerD2CPA::m_seqMaxA), MakeUintegerChecker<uint32_t>())
-        .AddAttribute("range", "range of seq", UintegerValue(10), MakeUintegerAccessor(&ConsumerD2CPA::m_range),
+                    MakeUintegerAccessor(&ConsumerCPA::m_seqMaxA), MakeUintegerChecker<uint32_t>())
+        .AddAttribute("range", "range of seq", UintegerValue(10), MakeUintegerAccessor(&ConsumerCPA::m_range),
                     MakeUintegerChecker<uint32_t>());
 
   return tid;
 }
 
-ConsumerD2CPA::ConsumerD2CPA()
+ConsumerCPA::ConsumerCPA()
   : ConsumerCbr()
   , m_initial(true)
   , m_vNow(0)
@@ -71,37 +74,44 @@ ConsumerD2CPA::ConsumerD2CPA()
 }
 
 void
-ConsumerD2CPA::StartApplication()
+ConsumerCPA::StartApplication()
 {
   Consumer::StartApplication();
 
-  InitializeD2CPA();
+  InitializeCPA();
   
 }
 
 void
-ConsumerD2CPA::InitializeD2CPA()
+ConsumerCPA::InitializeCPA()
 {
-  uint32_t numOfSteps = m_vMax / m_vStep;
-  NS_LOG_LOGIC("numOfSteps=" << numOfSteps);
-  D2CPA();
-  for(uint32_t i=1;i<numOfSteps;i++){
-      Simulator::ScheduleWithContext(GetNode()->GetId(), m_tStep*i, &ConsumerD2CPA::D2CPA,
-                                   this);
+  if(m_isDynamic){
+    NS_LOG_LOGIC("is dynamic");
+    uint32_t numOfSteps = m_vMax / m_vStep;
+    NS_LOG_LOGIC("numOfSteps=" << numOfSteps);
+    CPA();
+    for(uint32_t i=1;i<numOfSteps;i++){
+        Simulator::ScheduleWithContext(GetNode()->GetId(), m_tStep*i, &ConsumerCPA::CPA,
+                                    this);
+    }
   }
-  //ScheduleNextPacket();
-}
-
-void
-ConsumerD2CPA::D2CPA()
-{
-  m_vNow += m_vStep;
-  NS_LOG_LOGIC("m_vNow=" << m_vNow);
+  else{
+    NS_LOG_LOGIC("is static");
+    m_vNow = m_vMax;
+    NS_LOG_LOGIC("m_vNow=" << m_vNow);
+  }
   ScheduleNextPacket();
 }
 
 void
-ConsumerD2CPA::SendPacket()
+ConsumerCPA::CPA()
+{
+  m_vNow += m_vStep;
+  NS_LOG_LOGIC("m_vNow=" << m_vNow);
+}
+
+void
+ConsumerCPA::SendPacket()
 {
   if (!m_active)
     return;
@@ -137,7 +147,7 @@ ConsumerD2CPA::SendPacket()
       }
     }
 
-    seq = ConsumerD2CPA::GetNextSeq();
+    seq = ConsumerCPA::GetNextSeq();
     m_seq++;
   }
 
@@ -152,7 +162,7 @@ ConsumerD2CPA::SendPacket()
   interest->setNonce(m_rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setName(*nameWithSequence);
 
- //加上ConsumerIdTag
+  //加上ConsumerIdTag
   auto nodeid = GetNode()->GetId();
   //高16位为用户类型（0为正常，1为恶意），接下来16位为是否直接来自消费者（消费者产生的为1），低32位为节点id。设置Tag并读取三个部分
   uint64_t tagValue = (uint64_t)1 << 48 | (uint64_t)1 << 32 |nodeid;
@@ -165,6 +175,7 @@ ConsumerD2CPA::SendPacket()
   // 提取低32位
   uint32_t lowBits = tagRead & 0xFFFFFFFF;
   NS_LOG_INFO("Tag value: high16=" << highBits << ", mid16=" << middleBits<< ", low32=" << lowBits);
+
 
   // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
   NS_LOG_INFO("> Interest for " << seq << ", Total: " << m_seq << ", face: " << m_face->getId());
@@ -184,11 +195,11 @@ ConsumerD2CPA::SendPacket()
   m_transmittedInterests(interest, this, m_face);
   m_appLink->onReceiveInterest(*interest);
 
-  ConsumerD2CPA::ScheduleNextPacket();
+  ConsumerCPA::ScheduleNextPacket();
 }
 
 uint32_t
-ConsumerD2CPA::GetNextSeq()
+ConsumerCPA::GetNextSeq()
 {
   NS_LOG_LOGIC("m_vNow=" << m_vNow);
   auto r = rand() % m_range;
@@ -200,18 +211,18 @@ ConsumerD2CPA::GetNextSeq()
 }
 
 void
-ConsumerD2CPA::ScheduleNextPacket()
+ConsumerCPA::ScheduleNextPacket()
 {
   if (m_firstTime) {
     NFD_LOG_DEBUG("first time");
-    m_sendEvent = Simulator::Schedule(Seconds(0.0), &ConsumerD2CPA::SendPacket, this);
+    m_sendEvent = Simulator::Schedule(Seconds(0.0), &ConsumerCPA::SendPacket, this);
     m_firstTime = false;
   }
   else if (!m_sendEvent.IsRunning())
   {
     Time delay = Seconds(1.0 / m_vNow);
     NS_LOG_LOGIC("delay=" << delay);
-    m_sendEvent = Simulator::Schedule(delay, &ConsumerD2CPA::SendPacket, this);
+    m_sendEvent = Simulator::Schedule(delay, &ConsumerCPA::SendPacket, this);
   }
 }
 
