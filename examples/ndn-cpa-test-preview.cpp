@@ -44,8 +44,7 @@ main(int argc, char* argv[])
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
-  //要在ndnSIM/helper/ndn-stack-helper.cpp中加上这个策略的头文件并m_csPolicies.insert
-  ndnHelper.setPolicy("nfd::cs::popularity");
+  ndnHelper.setPolicy("nfd::cs::lru");
   ndnHelper.setCsSize(100);
   for(int i = 0; i <= 1; i++){
     ndnHelper.Install(Names::Find<Node>(std::to_string(i)));
@@ -99,7 +98,7 @@ main(int argc, char* argv[])
     consumerHelper.SetAttribute("tStep", TimeValue(Seconds(0.05)));
     consumerHelper.SetAttribute("MaxSeqA", UintegerValue(10000));
     consumerHelper.SetAttribute("range", UintegerValue(50));
-    consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(200)));//攻击时刻
+    consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(5)));//攻击时刻
     consumerHelper.Install(consumers[i]);
   }
 
@@ -119,9 +118,7 @@ main(int argc, char* argv[])
 
 
 
-  Simulator::Stop(Seconds(20));
-
-  ndn::CsTracer::InstallAll("/media/sf_ndnsim/cs-trace.txt", Seconds(1));
+  Simulator::Stop(Seconds(21));
 
   Simulator::Run();
   Simulator::Destroy();
