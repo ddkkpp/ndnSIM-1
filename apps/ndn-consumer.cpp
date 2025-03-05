@@ -44,6 +44,23 @@ namespace ndn {
 
 NS_OBJECT_ENSURE_REGISTERED(Consumer);
 
+// void computeMetricsWDCallback(Consumer *ptr)
+// {
+//   NS_LOG_DEBUG("m_numOfReceivedData in this period = "<<ptr->m_numOfReceivedData);
+//   if(ptr->m_numOfReceivedData==0){
+//     NS_LOG_DEBUG("retrievalTime in this period = (没有data返回)");
+//   }
+//   else{
+//     NS_LOG_DEBUG("retrievalTime in this period = "<<double(ptr->m_sumRetrievalTime.GetMilliSeconds()) / double(ptr->m_numOfReceivedData));
+//     NS_LOG_DEBUG("hopCount in this period = "<<double(ptr->m_sumOfHopCount) / double(ptr->m_numOfReceivedData));
+//   }
+//   ptr->m_numOfReceivedData=0;
+//   ptr->m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
+//   ptr->m_sumOfHopCount=0;
+//   ptr->computeMetricsWD.Ping(MilliSeconds(500));
+// }
+
+
 TypeId
 Consumer::GetTypeId(void)
 {
@@ -64,7 +81,10 @@ Consumer::GetTypeId(void)
                     StringValue("50ms"),
                     MakeTimeAccessor(&Consumer::GetRetxTimer, &Consumer::SetRetxTimer),
                     MakeTimeChecker())
-
+      // .AddAttribute("WatchDog", "",
+      //                             DoubleValue(500),
+      //                             MakeDoubleAccessor(&Consumer::SetWatchDog),
+      //                             MakeDoubleChecker<double>())
       .AddTraceSource("LastRetransmittedInterestDataDelay",
                       "Delay between last retransmitted Interest and received Data",
                       MakeTraceSourceAccessor(&Consumer::m_lastRetransmittedInterestDataDelay),
@@ -87,6 +107,17 @@ Consumer::Consumer()
 
   m_rtt = CreateObject<RttMeanDeviation>();
 }
+
+// void 
+// Consumer::SetWatchDog(double t)
+// {
+//     if (t > 0)
+//     {
+//         computeMetricsWD.Ping(MilliSeconds(t));
+//         computeMetricsWD.SetFunction(computeMetricsWDCallback);
+//         computeMetricsWD.SetArguments<Consumer *>(this);
+//     }
+// }
 
 void
 Consumer::SetRetxTimer(Time retxTimer)
@@ -217,6 +248,8 @@ Consumer::OnData(shared_ptr<const Data> data)
 
   App::OnData(data); // tracing inside
 
+  ++m_numOfReceivedData;
+
   NS_LOG_FUNCTION(this << data);
 
   // NS_LOG_INFO ("Received content object: " << boost::cref(*data));
@@ -231,6 +264,8 @@ Consumer::OnData(shared_ptr<const Data> data)
     hopCount = *hopCountTag;
   }
   NS_LOG_DEBUG("Hop count: " << hopCount);
+  m_sumOfHopCount += hopCount;
+  NS_LOG_DEBUG("m_sumOfHopCount= " << m_sumOfHopCount);
 
   SeqTimeoutsContainer::iterator entry = m_seqLastDelay.find(seq);
   if (entry != m_seqLastDelay.end()) {
@@ -240,6 +275,8 @@ Consumer::OnData(shared_ptr<const Data> data)
   entry = m_seqFullDelay.find(seq);
   if (entry != m_seqFullDelay.end()) {
     m_firstInterestDataDelay(this, seq, Simulator::Now() - entry->time, m_seqRetxCounts[seq], hopCount);
+    m_sumRetrievalTime=m_sumRetrievalTime + Simulator::Now() - entry->time;
+    NS_LOG_DEBUG("m_sumRetrievalTime= "<<m_sumRetrievalTime.GetMilliSeconds());
   }
 
   m_seqRetxCounts.erase(seq);

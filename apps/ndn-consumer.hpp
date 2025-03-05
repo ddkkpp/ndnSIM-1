@@ -38,6 +38,7 @@
 #include <boost/multi_index/tag.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
+#include "ns3/watchdog.h"
 
 namespace ns3 {
 namespace ndn {
@@ -57,6 +58,8 @@ public:
    */
   Consumer();
   virtual ~Consumer(){};
+
+  //friend void computeMetricsWDCallback(Consumer *ptr);//友元函数可以访问类的非公开成员
 
   // From App
   virtual void
@@ -131,6 +134,9 @@ protected:
   Time
   GetRetxTimer() const;
 
+
+  //void SetWatchDog(double t);
+
 protected:
   Ptr<UniformRandomVariable> m_rand; ///< @brief nonce generator
 
@@ -145,6 +151,11 @@ protected:
   Time m_offTime;          ///< \brief Time interval between packets
   Name m_interestName;     ///< \brief NDN Name of the Interest (use Name)
   Time m_interestLifeTime; ///< \brief LifeTime for interest packet
+
+  // Watchdog computeMetricsWD;
+  uint32_t m_numOfReceivedData=0;
+  uint32_t m_sumOfHopCount=0;
+  Time m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
 
   /// @cond include_hidden
   /**

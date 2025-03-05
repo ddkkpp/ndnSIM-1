@@ -22,6 +22,8 @@
 #include "ndn-consumer-zipf-mandelbrot.hpp"
 #include <ndn-cxx/lp/tags.hpp>
 
+#include "ns3/log.h"
+
 #include <math.h>
 
 NS_LOG_COMPONENT_DEFINE("ndn.ConsumerZipfMandelbrot");
@@ -31,6 +33,24 @@ namespace ndn {
 
 NS_OBJECT_ENSURE_REGISTERED(ConsumerZipfMandelbrot);
 
+
+void 
+computeMetricsWDCallback(ConsumerZipfMandelbrot *ptr)
+{
+  NS_LOG_DEBUG("m_numOfReceivedData in this period = "<<ptr->m_numOfReceivedData);
+  if(ptr->m_numOfReceivedData==0){
+    NS_LOG_DEBUG("retrievalTime in this period = (没有data返回)");
+  }
+  else{
+    NS_LOG_DEBUG("retrievalTime in this period = "<<double(ptr->m_sumRetrievalTime.GetMilliSeconds()) / double(ptr->m_numOfReceivedData));
+    NS_LOG_DEBUG("hopCount in this period = "<<double(ptr->m_sumOfHopCount) / double(ptr->m_numOfReceivedData));
+  }
+  ptr->m_numOfReceivedData=0;
+  ptr->m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
+  ptr->m_sumOfHopCount=0;
+  ptr->computeMetricsWD.Ping(MilliSeconds(500));
+}
+
 TypeId
 ConsumerZipfMandelbrot::GetTypeId(void)
 {
@@ -39,7 +59,10 @@ ConsumerZipfMandelbrot::GetTypeId(void)
       .SetGroupName("Ndn")
       .SetParent<ConsumerCbr>()
       .AddConstructor<ConsumerZipfMandelbrot>()
-
+      .AddAttribute("WatchDog", "",
+                                  DoubleValue(500),
+                                  MakeDoubleAccessor(&ConsumerZipfMandelbrot::SetWatchDog),
+                                  MakeDoubleChecker<double>())
       .AddAttribute("NumberOfContents", "Number of the Contents in total", StringValue("100"),
                     MakeUintegerAccessor(&ConsumerZipfMandelbrot::SetNumberOfContents,
                                          &ConsumerZipfMandelbrot::GetNumberOfContents),
@@ -73,6 +96,17 @@ ConsumerZipfMandelbrot::~ConsumerZipfMandelbrot()
 {
 }
 
+void 
+ConsumerZipfMandelbrot::SetWatchDog(double t)
+{
+    if (t > 0)
+    {
+        computeMetricsWD.Ping(MilliSeconds(t));
+        computeMetricsWD.SetFunction(computeMetricsWDCallback);
+        computeMetricsWD.SetArguments<ConsumerZipfMandelbrot *>(this);
+    }
+}
+
 void
 ConsumerZipfMandelbrot::SetNumberOfContents(uint32_t numOfContents)
 {
@@ -92,7 +126,7 @@ ConsumerZipfMandelbrot::SetNumberOfContents(uint32_t numOfContents)
 
   for (uint32_t i = 1; i <= m_N; i++) {
     m_Pcum[i] = m_Pcum[i] / m_Pcum[m_N];
-    NS_LOG_LOGIC("Cumulative probability [" << i << "]=" << m_Pcum[i]);
+    //NS_LOG_LOGIC("Cumulative probability [" << i << "]=" << m_Pcum[i]);
   }
 }
 
@@ -176,14 +210,23 @@ ConsumerZipfMandelbrot::SendPacket()
   nameWithSequence->appendSequenceNumber(seq);
   //
 
-  //需要先加上tag头文件
   shared_ptr<Interest> interest = make_shared<Interest>();
   interest->setNonce(m_rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setName(*nameWithSequence);
 
   //加上ConsumerIdTag
   auto nodeid = GetNode()->GetId();
-  interest->setTag(make_shared<ndn::lp::ConsumerIdTag>(nodeid));
+  //高16位为用户类型（0为正常，1为恶意），接下来16位为是否直接来自消费者（消费者产生的为1），低32位为节点id。设置Tag并读取三个部分
+  uint64_t tagValue = (uint64_t)0 << 48 | (uint64_t)1 << 32 |nodeid;
+  interest->setTag(make_shared<ndn::lp::ConsumerIdTag>(tagValue));
+  auto tagRead = *(interest->getTag<ndn::lp::ConsumerIdTag>());
+  // 提取高16位
+  uint32_t highBits =  tagRead >> 48 & 0xFFFFFFFF;
+  //提取中16位
+  uint32_t middleBits = tagRead >> 32 & 0x0000FFFF;
+  // 提取低32位
+  uint32_t lowBits = tagRead & 0xFFFFFFFF;
+  NS_LOG_INFO("Tag value: high16=" << highBits << ", mid16=" << middleBits<< ", low32=" << lowBits);
 
   // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
   NS_LOG_INFO("> Interest for " << seq << ", Total: " << m_seq << ", face: " << m_face->getId());
