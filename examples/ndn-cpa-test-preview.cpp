@@ -98,7 +98,7 @@ main(int argc, char* argv[])
     consumerHelper.SetAttribute("tStep", TimeValue(Seconds(0.05)));
     consumerHelper.SetAttribute("MaxSeqA", UintegerValue(10000));
     consumerHelper.SetAttribute("range", UintegerValue(50));
-    consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(200)));//攻击时刻
+    consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(5)));//攻击时刻
     consumerHelper.Install(consumers[i]);
   }
 

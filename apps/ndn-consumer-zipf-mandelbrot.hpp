@@ -37,6 +37,7 @@
 #include "ns3/double.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/rng-seed-manager.h"
+#include "ns3/watchdog.h"
 
 namespace ns3 {
 namespace ndn {
@@ -62,6 +63,10 @@ public:
   ConsumerZipfMandelbrot();
   virtual ~ConsumerZipfMandelbrot();
 
+  friend void computeMetricsWDCallback(ConsumerZipfMandelbrot *ptr);//友元函数可以访问类的非公开成员
+
+ void SetWatchDog(double t);
+
   virtual void
   SendPacket();
 
@@ -71,6 +76,8 @@ public:
 protected:
   virtual void
   ScheduleNextPacket();
+
+  Watchdog computeMetricsWD;
 
 private:
   void
@@ -98,6 +105,8 @@ private:
   std::vector<double> m_Pcum; // cumulative probability
 
   Ptr<UniformRandomVariable> m_seqRng; // RNG
+
+  
 };
 
 } /* namespace ndn */
