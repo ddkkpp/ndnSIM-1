@@ -37,115 +37,129 @@ main(int argc, char* argv[])
   CommandLine cmd;
   cmd.Parse(argc, argv);
 
-  // std::cout << "命令行参数数量: " << argc << std::endl;
-  // std::cout << "所有参数: ";
-  // for (int i = 0; i < argc; i++) {
-  //   std::cout << argv[i] << " ";
-  // }
-  // std::cout << std::endl;
+  std::cout << "命令行参数数量: " << argc << std::endl;
+  std::cout << "所有参数: ";
+  for (int i = 0; i < argc; i++) {
+    std::cout << argv[i] << " ";
+  }
+  std::cout << std::endl;
 
-  // if (argc < 4) {
-  //   std::cerr << "Usage: ./waf --run=ndn-cpa para1 para2 para3\n";
-  //   std::cerr << "para1 is topo-cpa-basic-A-, topo-cpa-basic-A+, topo-cpa-DFN-A-, topo-cpa-DFN-A+\n";
-  //   std::cerr << "para2 is rate_high, rate_medium, rate_dynamic\n";
-  //   std::cerr << "para3 is LDA, FLA\n";
-  //   return 1;
-  // }
+  if (argc < 5) {
+    std::cerr << "Usage: ./waf --run=ndn-cpa para1 para2 para3 para4\n";
+    std::cerr << "para1 is \"topo-cpa-basic-A-\", \"topo-cpa-basic-A+\", \"topo-cpa-DFN-A-\", \"topo-cpa-DFN-A+\"\n";
+    std::cerr << "para2 is \"rate-static\", \"rate-dynamic\"\n";
+    std::cerr << "para3 is intensity\n";
+    std::cerr << "para4 is seq range\n";
+    return 1;
+  }
 
-  // std::string para1 = argv[1];
-  // std::string para2 = argv[2];
-  // std::string para3 = argv[3];
+  std::string para1 = argv[1];
+  std::string para2 = argv[2];
+  double para3 = std::stod(argv[3]);
+  uint32_t para4 = std::stoul(argv[4]);
+  
+    std::cout<<"para1 "<<para1<<std::endl;
+    std::cout<<"para2 "<<para2<<std::endl;
+    std::cout<<"para3 "<<para3<<std::endl;
+    std::cout<<"para4 "<<para4<<std::endl;
 
-  // std::vector<std::string> validPara1 = {"topo-cpa-basic-A-", "topo-cpa-basic-A+", "topo-cpa-DFN-A-", "topo-cpa-DFN-A+"};
-  // std::vector<std::string> validPara2 = {"rate_high", "rate_medium", "rate_dynamic"};
-  // std::vector<std::string> validPara3 = {"LDA", "FLA"};
+  std::vector<std::string> validPara1 = {"topo-cpa-basic-A-", "topo-cpa-basic-A+", "topo-cpa-DFN-A-", "topo-cpa-DFN-A+"};
+  std::vector<std::string> validPara2 = {"rate-static", "rate-dynamic"};
 
-  // if (std::find(validPara1.begin(), validPara1.end(), para1) == validPara1.end() ||
-  //     std::find(validPara2.begin(), validPara2.end(), para2) == validPara2.end() ||
-  //     std::find(validPara3.begin(), validPara3.end(), para3) == validPara3.end()) {
-  //   std::cerr << "Invalid parameters.\n";
-  //   std::cerr << "Usage: ./waf --run=ndn-cpa para1 para2 para3\n";
-  //   std::cerr << "para1 is topo-cpa-basic-A-, topo-cpa-basic-A+, topo-cpa-DFN-A-, topo-cpa-DFN-A+\n";
-  //   std::cerr << "para2 is rate_high, rate_medium, rate_dynamic\n";
-  //   std::cerr << "para3 is LDA, FLA\n";
-  //   return 1;
-  // }
+  if (std::find(validPara1.begin(), validPara1.end(), para1) == validPara1.end() ||
+      std::find(validPara2.begin(), validPara2.end(), para2) == validPara2.end()) {
+    std::cerr << "Invalid parameters.\n";
+    std::cerr << "Usage: ./waf --run=ndn-cpa para1 para2 para3\n";
+    std::cerr << "para1 is \"topo-cpa-basic-A-\", \"topo-cpa-basic-A+\", \"topo-cpa-DFN-A-\", \"topo-cpa-DFN-A+\"\n";
+    std::cerr << "para2 is \"rate_static\", \"rate_dynamic\"\n";
+    return 1;
+  }
 
   AnnotatedTopologyReader topologyReader("", 25);
-  topologyReader.SetFileName("src/ndnSIM/examples/topologies/topo-cpa-basic-A-.txt");
-  //topologyReader.SetFileName("src/ndnSIM/examples/topologies/" + para1 + ".txt");
+  //topologyReader.SetFileName("src/ndnSIM/examples/topologies/topo-cpa-basic-A-.txt");
+  topologyReader.SetFileName("src/ndnSIM/examples/topologies/" + para1 + ".txt");
   topologyReader.Read();
 
-  // Install NDN stack on all nodes
-  ndn::StackHelper ndnHelper;
-  ndnHelper.setPolicy("nfd::cs::lru");
-  ndnHelper.setCsSize(100);
-  for(int i = 0; i <= 4; i++){
-    ndnHelper.Install(Names::Find<Node>("Node" + std::to_string(i)));
-  }
-  //消费者节点要禁用缓存，不然兴趣包在消费者节点的缓存就满足了，不会转发到边缘节点
-  ndnHelper.setCsSize(0);
-  for (int i = 0; i <= 17; i++) {
-     ndnHelper.Install(Names::Find<Node>("consumer_normal_"+std::to_string(i)));
-  }
-  for (int i = 0; i <= 2; i++) {
-     ndnHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
-  }
-  // Set BestRoute strategy
-  ndn::StrategyChoiceHelper::InstallAll("/", "/localhost/nfd/strategy/best-route");
+  if(para1 == "topo-cpa-basic-A-"){
+    // Install NDN stack on all nodes
+    ndn::StackHelper ndnHelper;
+    //只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity
+    //只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity
+    //只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity
+    //只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity
+    //只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity
+    //只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity
+    ndnHelper.setPolicy("nfd::cs::lru");
+    ndnHelper.setCsSize(100);
+    for(int i = 0; i <= 4; i++){
+      ndnHelper.Install(Names::Find<Node>("Node" + std::to_string(i)));
+    }
+    //消费者节点要禁用缓存，不然兴趣包在消费者节点的缓存就满足了，不会转发到边缘节点
+    ndnHelper.setCsSize(0);
+    for (int i = 0; i <= 17; i++) {
+      ndnHelper.Install(Names::Find<Node>("consumer_normal_"+std::to_string(i)));
+    }
+    for (int i = 0; i <= 2; i++) {
+      ndnHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
+    }
+    // Set BestRoute strategy
+    ndn::StrategyChoiceHelper::InstallAll("/", "/localhost/nfd/strategy/best-route");
 
-  // Installing global routing interface on all nodes
-  ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
-  ndnGlobalRoutingHelper.InstallAll();
+    // Installing global routing interface on all nodes
+    ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
+    ndnGlobalRoutingHelper.InstallAll();
 
-  // Getting containers for the consumer/producer
-  Ptr<Node> producerNode = Names::Find<Node>("Node0");
-  
+    // Getting containers for the consumer/producer
+    Ptr<Node> producerNode = Names::Find<Node>("Node0");
+    
 
-  //正常用户
-  for (int i = 0; i <= 17; i++) {
-    ndn::AppHelper consumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
-    consumerHelper.SetPrefix("/prefix");
-    std::ostringstream oss;
-    oss << 500 + 100 * (rand() % 6);
-    std::string frequencyValue = oss.str();
-    consumerHelper.SetAttribute("Frequency", StringValue(frequencyValue)); 
-    consumerHelper.SetAttribute("Randomize", StringValue("exponential"));
-    consumerHelper.SetAttribute("s", StringValue("1"));//每设置一次s或q或NumberOfContents，都会调用SetNumberOfContents进行流行度计算
-    consumerHelper.SetAttribute("NumberOfContents", StringValue("10000"));
-    //consumerHelper.Install(normal_consumers[i]);
-    consumerHelper.Install(Names::Find<Node>("consumer_normal_"+std::to_string(i)));
-  }
-
-  //攻击者
-  for (int i = 0; i <= 2; i++) {
-    ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCPA");
-    consumerHelper.SetPrefix("/prefix");
-    //这个是对所有内容的请求速率之和，后续可以乘以内容数量，使得每个内容的请求速率较大。
-    //现在一个攻击者对单个内容的速率是200/50(vMax/range),而活动水平最大的正常用户对最流行内容的速率是200*0.06（q=0.7,s=1.0时）。
-    consumerHelper.SetAttribute("vMax", UintegerValue(1000)); 
-    consumerHelper.SetAttribute("vStep", UintegerValue(100));
-    consumerHelper.SetAttribute("tStep", TimeValue(Seconds(0.05)));
-    consumerHelper.SetAttribute("MaxSeqA", UintegerValue(10000));
-    consumerHelper.SetAttribute("range", UintegerValue(50));
-    consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(15)));//攻击时刻
-    //consumerHelper.Install(malicious_consumers[i]);
-    consumerHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
-  }
-
+    //正常用户
+    int sum_rate = 0;
+    for (int i = 0; i <= 17; i++) {
+      ndn::AppHelper consumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
+      consumerHelper.SetPrefix("/prefix");
+      std::ostringstream oss;
+      oss << 500 + 100 * (rand() % 6);
+      std::string frequencyValue = oss.str();
+      sum_rate += std::stoi(frequencyValue);
+      std::cout<<frequencyValue<<sum_rate;
+      consumerHelper.SetAttribute("Frequency", StringValue(frequencyValue)); 
+      consumerHelper.SetAttribute("Randomize", StringValue("exponential"));
+      consumerHelper.SetAttribute("s", StringValue("1"));//每设置一次s或q或NumberOfContents，都会调用SetNumberOfContents进行流行度计算
+      consumerHelper.SetAttribute("NumberOfContents", StringValue("10000"));
+      //consumerHelper.Install(normal_consumers[i]);
+      consumerHelper.Install(Names::Find<Node>("consumer_normal_"+std::to_string(i)));
+    }
+    std::cout<<"sum_rate"<<sum_rate;
+    uint32_t rate_attacker = sum_rate * para3 / 3;
+    std::cout<<"rate_attacker"<<rate_attacker;
+    //攻击者
+    for (int i = 0; i <= 2; i++) {
+      ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCPA");
+      consumerHelper.SetPrefix("/prefix");
+      consumerHelper.SetAttribute("vMax", UintegerValue(rate_attacker)); 
+      if(para2 == "rate-dynamic"){
+        consumerHelper.SetAttribute("isDynamic", BooleanValue(true));
+      }
+      consumerHelper.SetAttribute("vStep", UintegerValue(100));
+      consumerHelper.SetAttribute("tStep", TimeValue(Seconds(0.05)));
+      consumerHelper.SetAttribute("MaxSeqA", UintegerValue(10000));
+      consumerHelper.SetAttribute("range", UintegerValue(para4));
+      consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(0)));//攻击时刻
+      //consumerHelper.Install(malicious_consumers[i]);
+      consumerHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
+    }
 
     ndn::AppHelper producerHelper("ns3::ndn::Producer");
     producerHelper.SetPrefix("/prefix");
     producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
     producerHelper.Install(producerNode);
     ndnGlobalRoutingHelper.AddOrigins("/prefix", producerNode);
-  
 
-
-
-  // Calculate and install FIBs
-  //ndn::GlobalRoutingHelper::CalculateRoutes();
-  ndnGlobalRoutingHelper.CalculateAllPossibleRoutes();
+    // Calculate and install FIBs
+    //ndn::GlobalRoutingHelper::CalculateRoutes();
+    ndnGlobalRoutingHelper.CalculateAllPossibleRoutes();
+  }
 
 
 
