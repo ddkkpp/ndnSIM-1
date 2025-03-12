@@ -145,7 +145,7 @@ main(int argc, char* argv[])
       consumerHelper.SetAttribute("tStep", TimeValue(Seconds(0.05)));
       consumerHelper.SetAttribute("MaxSeqA", UintegerValue(10000));
       consumerHelper.SetAttribute("range", UintegerValue(para4));
-      consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(0)));//攻击时刻
+      consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(5)));//攻击时刻
       //consumerHelper.Install(malicious_consumers[i]);
       consumerHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
     }
