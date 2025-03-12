@@ -141,8 +141,9 @@ ConsumerCPA::SendPacket()
 
   if (seq == std::numeric_limits<uint32_t>::max()) // no retransmission
   {
-    if (m_seqMaxA != std::numeric_limits<uint32_t>::max()) {
-      if (m_seq >= m_seqMaxA) {
+    //之前写成了m_seqMaxA，区别是:m_seqMax是发送的兴趣包总数上限（原本ndn就有的），m_seqMaxA是发送的兴趣包序号上限（我加的）
+    if (m_seqMax != std::numeric_limits<uint32_t>::max()) {
+      if (m_seq >= m_seqMax) {
         return; // we are totally done
       }
     }
@@ -169,9 +170,9 @@ ConsumerCPA::SendPacket()
   interest->setTag(make_shared<ndn::lp::ConsumerIdTag>(tagValue));
   auto tagRead = *(interest->getTag<ndn::lp::ConsumerIdTag>());
   // 提取高16位
-  uint32_t highBits =  tagRead >> 48 & 0xFFFFFFFF;
-  //提取中16位
-  uint32_t middleBits = tagRead >> 32 & 0x0000FFFF;
+  uint16_t highBits = (tagRead >> 48) & 0xFFFF;
+  // 提取中16位
+  uint16_t middleBits = (tagRead >> 32) & 0xFFFF;
   // 提取低32位
   uint32_t lowBits = tagRead & 0xFFFFFFFF;
   NS_LOG_INFO("Tag value: high16=" << highBits << ", mid16=" << middleBits<< ", low32=" << lowBits);
