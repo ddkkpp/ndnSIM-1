@@ -37,13 +37,13 @@ NS_OBJECT_ENSURE_REGISTERED(ConsumerZipfMandelbrot);
 void 
 computeMetricsWDCallback(ConsumerZipfMandelbrot *ptr)
 {
-  NS_LOG_DEBUG("m_numOfReceivedData in this period = "<<ptr->m_numOfReceivedData);
+  NS_LOG_INFO("m_numOfReceivedData in this period = "<<ptr->m_numOfReceivedData);
   if(ptr->m_numOfReceivedData==0){
-    NS_LOG_DEBUG("retrievalTime in this period = (没有data返回)");
+    NS_LOG_INFO("retrievalTime in this period = (没有data返回)");
   }
   else{
-    NS_LOG_DEBUG("retrievalTime in this period = "<<double(ptr->m_sumRetrievalTime.GetMilliSeconds()) / double(ptr->m_numOfReceivedData));
-    NS_LOG_DEBUG("hopCount in this period = "<<double(ptr->m_sumOfHopCount) / double(ptr->m_numOfReceivedData));
+    NS_LOG_INFO("retrievalTime in this period = "<<double(ptr->m_sumRetrievalTime.GetMilliSeconds()) / double(ptr->m_numOfReceivedData));
+    NS_LOG_INFO("hopCount in this period = "<<double(ptr->m_sumOfHopCount) / double(ptr->m_numOfReceivedData));
   }
   ptr->m_numOfReceivedData=0;
   ptr->m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
@@ -226,10 +226,10 @@ ConsumerZipfMandelbrot::SendPacket()
   uint16_t middleBits = (tagRead >> 32) & 0xFFFF;
   // 提取低32位
   uint32_t lowBits = tagRead & 0xFFFFFFFF;
-  NFD_LOG_INFO("Tag value: high16=" << highBits << ", mid16=" << middleBits<< ", low32=" << lowBits);
+  NFD_LOG_DEBUG("Tag value: high16=" << highBits << ", mid16=" << middleBits<< ", low32=" << lowBits);
 
-  // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
-  NS_LOG_INFO("> Interest for " << seq << ", Total: " << m_seq << ", face: " << m_face->getId());
+  // NS_LOG_DEBUG ("Requesting Interest: \n" << *interest);
+  NS_LOG_DEBUG("> Interest for " << seq << ", Total: " << m_seq << ", face: " << m_face->getId());
   NS_LOG_DEBUG("Trying to add " << seq << " with " << Simulator::Now() << ". already "
                                 << m_seqTimeouts.size() << " items");
 
