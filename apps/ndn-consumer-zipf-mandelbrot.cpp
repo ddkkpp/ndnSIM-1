@@ -37,13 +37,13 @@ NS_OBJECT_ENSURE_REGISTERED(ConsumerZipfMandelbrot);
 void 
 computeMetricsWDCallback(ConsumerZipfMandelbrot *ptr)
 {
-  NS_LOG_DEBUG("m_numOfReceivedData in this period = "<<ptr->m_numOfReceivedData);
+  NS_LOG_INFO("m_numOfReceivedData in this period = "<<ptr->m_numOfReceivedData);
   if(ptr->m_numOfReceivedData==0){
-    NS_LOG_DEBUG("retrievalTime in this period = (没有data返回)");
+    NS_LOG_INFO("retrievalTime in this period = (没有data返回)");
   }
   else{
-    NS_LOG_DEBUG("retrievalTime in this period = "<<double(ptr->m_sumRetrievalTime.GetMilliSeconds()) / double(ptr->m_numOfReceivedData));
-    NS_LOG_DEBUG("hopCount in this period = "<<double(ptr->m_sumOfHopCount) / double(ptr->m_numOfReceivedData));
+    NS_LOG_INFO("retrievalTime in this period = "<<double(ptr->m_sumRetrievalTime.GetMilliSeconds()) / double(ptr->m_numOfReceivedData));
+    NS_LOG_INFO("hopCount in this period = "<<double(ptr->m_sumOfHopCount) / double(ptr->m_numOfReceivedData));
   }
   ptr->m_numOfReceivedData=0;
   ptr->m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
@@ -110,12 +110,12 @@ ConsumerZipfMandelbrot::SetWatchDog(double t)
 void
 ConsumerZipfMandelbrot::SetNumberOfContents(uint32_t numOfContents)
 {
-  NS_LOG_LOGIC("m_frequency =" << m_frequency);
-  NS_LOG_LOGIC("m_randomType =" << m_randomType);
+  //NS_LOG_LOGIC("m_frequency =" << m_frequency);
+  //NS_LOG_LOGIC("m_randomType =" << m_randomType);
 
   m_N = numOfContents;
 
-  NS_LOG_DEBUG(m_q << " and " << m_s << " and " << m_N);
+  //NS_LOG_DEBUG(m_q << " and " << m_s << " and " << m_N);
 
   m_Pcum = std::vector<double>(m_N + 1);
 
@@ -168,7 +168,7 @@ ConsumerZipfMandelbrot::SendPacket()
   if (!m_active)
     return;
 
-  NS_LOG_FUNCTION_NOARGS();
+  //NS_LOG_FUNCTION_NOARGS();
 
   uint32_t seq = std::numeric_limits<uint32_t>::max(); // invalid
 
@@ -187,7 +187,7 @@ ConsumerZipfMandelbrot::SendPacket()
     //     sequence number
     //     continue;
     //   }
-    NS_LOG_DEBUG("=interest seq " << seq << " from m_retxSeqs");
+    //NS_LOG_DEBUG("=interest seq " << seq << " from m_retxSeqs");
     break;
   }
 
@@ -226,12 +226,12 @@ ConsumerZipfMandelbrot::SendPacket()
   uint16_t middleBits = (tagRead >> 32) & 0xFFFF;
   // 提取低32位
   uint32_t lowBits = tagRead & 0xFFFFFFFF;
-  NS_LOG_INFO("Tag value: high16=" << highBits << ", mid16=" << middleBits<< ", low32=" << lowBits);
+  //NS_LOG_INFO("Tag value: high16=" << highBits << ", mid16=" << middleBits<< ", low32=" << lowBits);
 
   // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
-  NS_LOG_INFO("> Interest for " << seq << ", Total: " << m_seq << ", face: " << m_face->getId());
-  NS_LOG_DEBUG("Trying to add " << seq << " with " << Simulator::Now() << ". already "
-                                << m_seqTimeouts.size() << " items");
+  // NS_LOG_INFO("> Interest for " << seq << ", Total: " << m_seq << ", face: " << m_face->getId());
+  // NS_LOG_DEBUG("Trying to add " << seq << " with " << Simulator::Now() << ". already "
+  //                               << m_seqTimeouts.size() << " items");
 
   m_seqTimeouts.insert(SeqTimeout(seq, Simulator::Now()));
   m_seqFullDelay.insert(SeqTimeout(seq, Simulator::Now()));
@@ -260,7 +260,7 @@ ConsumerZipfMandelbrot::GetNextSeq()
     p_random = m_seqRng->GetValue();
   }
   // if (p_random == 0)
-  NS_LOG_LOGIC("p_random=" << p_random);
+  //NS_LOG_LOGIC("p_random=" << p_random);
   for (uint32_t i = 1; i <= m_N; i++) {
     p_sum = m_Pcum[i]; // m_Pcum[i] = m_Pcum[i-1] + p[i], p[0] = 0;   e.g.: p_cum[1] = p[1],
                        // p_cum[2] = p[1] + p[2]
@@ -270,7 +270,7 @@ ConsumerZipfMandelbrot::GetNextSeq()
     } // if
   }   // for
   // content_index = 1;
-  NS_LOG_DEBUG("RandomNumber=" << content_index);
+  //NS_LOG_DEBUG("RandomNumber=" << content_index);
   return content_index;
 }
 
@@ -285,8 +285,8 @@ ConsumerZipfMandelbrot::ScheduleNextPacket()
   else if (!m_sendEvent.IsRunning())
   { 
     auto delay = m_random->GetValue();
-    NS_LOG_DEBUG("m_frequency=" << m_frequency);
-    NS_LOG_DEBUG("delay=" << delay);
+    //NS_LOG_DEBUG("m_frequency=" << m_frequency);
+    //NS_LOG_DEBUG("delay=" << delay);
     m_sendEvent = Simulator::Schedule((m_random == 0) ? Seconds(1.0 / m_frequency)
                                                       : Seconds(delay),
                                       &ConsumerZipfMandelbrot::SendPacket, this);
