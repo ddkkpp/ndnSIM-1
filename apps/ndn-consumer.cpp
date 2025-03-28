@@ -36,6 +36,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/ref.hpp>
+#include <fstream>
 
 NS_LOG_COMPONENT_DEFINE("ndn.Consumer");
 
@@ -46,15 +47,18 @@ NS_OBJECT_ENSURE_REGISTERED(Consumer);
 
 // void computeMetricsWDCallback(Consumer *ptr)
 // {
-//   NS_LOG_DEBUG("m_numOfReceivedData in this period = "<<ptr->m_numOfReceivedData);
+//   NS_LOG_INFO("m_numOfReceivedData in this period = "<<ptr->m_numOfReceivedData);
 //   if(ptr->m_numOfReceivedData==0){
-//     NS_LOG_DEBUG("retrievalTime in this period = (没有data返回)");
+//     NS_LOG_INFO("retrievalTime in this period = (没有data返回)");
 //   }
 //   else{
-//     NS_LOG_DEBUG("retrievalTime in this period = "<<double(ptr->m_sumRetrievalTime.GetMilliSeconds()) / double(ptr->m_numOfReceivedData));
-//     NS_LOG_DEBUG("hopCount in this period = "<<double(ptr->m_sumOfHopCount) / double(ptr->m_numOfReceivedData));
+//     NS_LOG_INFO("m_numOfSentInterest in this period = "<<ptr->m_numOfSentInterest);
+//     NS_LOG_INFO("ISR in this period = "<<double(ptr->m_numOfReceivedData) / double(ptr->m_numOfSentInterest));
+//     NS_LOG_INFO("retrievalTime in this period = "<<double(ptr->m_sumRetrievalTime.GetMilliSeconds()) / double(ptr->m_numOfReceivedData));
+//     NS_LOG_INFO("hopCount in this period = "<<double(ptr->m_sumOfHopCount) / double(ptr->m_numOfReceivedData));
 //   }
 //   ptr->m_numOfReceivedData=0;
+//   ptr->m_numOfSentInterest=0;
 //   ptr->m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
 //   ptr->m_sumOfHopCount=0;
 //   ptr->computeMetricsWD.Ping(MilliSeconds(500));
@@ -257,6 +261,14 @@ Consumer::OnData(shared_ptr<const Data> data)
   // This could be a problem......
   uint32_t seq = data->getName().at(-1).toSequenceNumber();
   NS_LOG_INFO("< DATA for " << seq);
+
+
+   //seq输入到文件GetNode()->GetId().txt
+   std::ofstream outfile;
+   std::string seqfile = "data:node_" + std::to_string(GetNode()->GetId()) + ".txt";
+   outfile.open(seqfile);
+   outfile << seq << std::endl;
+   outfile.close();
 
   int hopCount = 0;
   auto hopCountTag = data->getTag<lp::HopCountTag>();
