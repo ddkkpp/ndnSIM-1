@@ -46,14 +46,13 @@ ConsumerCPA::GetTypeId(void)
       .SetGroupName("Ndn")
       .SetParent<ConsumerCbr>()
       .AddConstructor<ConsumerCPA>()
-
-      .AddAttribute("vMax", "max send rate", UintegerValue(200), MakeUintegerAccessor(&ConsumerCPA::m_vMax),
-                    MakeUintegerChecker<uint32_t>())
+      .AddAttribute("vMax", "max send rate", DoubleValue(200), MakeDoubleAccessor(&ConsumerCPA::m_vMax),
+              MakeDoubleChecker<double>())
       .AddAttribute("isDynamic", "is rate Dynamic?", BooleanValue(false), 
               MakeBooleanAccessor(&ConsumerCPA::m_isDynamic),
               MakeBooleanChecker())
-        .AddAttribute("vStep", "value of send rate for each increment", UintegerValue(10), MakeUintegerAccessor(&ConsumerCPA::m_vStep),
-                    MakeUintegerChecker<uint32_t>())
+        .AddAttribute("vStep", "value of send rate for each increment", DoubleValue(10), MakeDoubleAccessor(&ConsumerCPA::m_vStep),
+              MakeDoubleChecker<double>())
         .AddAttribute("tStep", "time between each send rate increase", TimeValue(Seconds(0.05)),
             MakeTimeAccessor(&ConsumerCPA::m_tStep),
             MakeTimeChecker()) 

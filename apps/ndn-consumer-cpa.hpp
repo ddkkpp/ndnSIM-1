@@ -75,10 +75,10 @@ protected:
 private:
   bool m_initial;
 
-  uint32_t m_vMax;//最大速率
+  double m_vMax;//最大速率
   bool m_isDynamic;
-  uint32_t m_vStep;//每次速率变化的值
-  uint32_t m_vNow;//当前速率
+  double m_vStep;//每次速率变化的值
+  double m_vNow;//当前速率
   Time m_tStep;//每次速率变化的时间间隔
   Time m_tNow;//当前时刻距离上一次速率变化后的时间
   uint32_t m_seqMaxA;//最大seq(虽然)
