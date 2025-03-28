@@ -1,0 +1,107 @@
+# Fully corrected and structumalicious topology file with renamed consumers
+#        (Producer)
+#            0
+#            |
+#            1
+#         /  |  \
+#       2    3    4
+#      /|    |\    |\
+# consumer_normal_0~3   consumer_malicious_0~3
+# consumer_normal_4~9   consumer_malicious_4~9
+# consumer_normal_10~17   consumer_malicious_10~17 
+# (G: normal Consumers, R: malicious Consumers)
+
+router
+Node0   Producer      90      50
+Node1   Router        80      50
+Node2   Router        70      30
+Node3   Router        70      50
+Node4   Router        70      70
+consumer_normal_0   Consumer_normal   50      10
+consumer_normal_1   Consumer_normal   50      14
+consumer_normal_2   Consumer_normal   50      18
+consumer_normal_3   Consumer_normal   50      22
+consumer_malicious_0     Consumer_malicious     50      26
+consumer_malicious_1     Consumer_malicious     50      27
+consumer_malicious_2     Consumer_malicious     50      28
+consumer_malicious_3     Consumer_malicious     50      29
+consumer_normal_4   Consumer_normal   50      30
+consumer_normal_5   Consumer_normal   50      34
+consumer_normal_6   Consumer_normal   50      38
+consumer_normal_7   Consumer_normal   50      42
+consumer_normal_8   Consumer_normal   50      46
+consumer_normal_9   Consumer_normal   50      50
+consumer_malicious_4     Consumer_malicious     50      52
+consumer_malicious_5     Consumer_malicious     50      53
+consumer_malicious_6     Consumer_malicious     50      54
+consumer_malicious_7     Consumer_malicious     50      55
+consumer_malicious_8     Consumer_malicious     50      56
+consumer_malicious_9     Consumer_malicious     50      57
+consumer_normal_10  Consumer_normal   50      58
+consumer_normal_11  Consumer_normal   50      62
+consumer_normal_12  Consumer_normal   50      66
+consumer_normal_13  Consumer_normal   50      70
+consumer_normal_14  Consumer_normal   50      74
+consumer_normal_15  Consumer_normal   50      78
+consumer_normal_16  Consumer_normal   50      82
+consumer_normal_17  Consumer_normal   50      86
+consumer_malicious_10    Consumer_malicious     50      88
+consumer_malicious_11    Consumer_malicious     50      89
+consumer_malicious_12    Consumer_malicious     50      90
+consumer_malicious_13    Consumer_malicious     50      91
+consumer_malicious_14    Consumer_malicious     50      92
+consumer_malicious_15    Consumer_malicious     50      93
+consumer_malicious_16    Consumer_malicious     50      94
+consumer_malicious_17    Consumer_malicious     50      95
+
+link
+# Router-to-Producer links (default delay 5ms)
+Node1          Node0          1Gbps  1  5ms   1000
+Node2          Node1          1Gbps  1  5ms   1000
+Node3          Node1          1Gbps  1  5ms   1000
+Node4          Node1          1Gbps  1  5ms   1000
+
+# normal consumer links (sample delay 15ms)
+consumer_normal_0   Node2       1Gbps  1  15ms   1000
+consumer_normal_1   Node2       1Gbps  1  10ms   1000
+consumer_normal_2   Node2       1Gbps  1  5ms   1000
+consumer_normal_3   Node2       1Gbps  1  20ms   1000
+
+consumer_normal_4   Node3       1Gbps  1  10ms   1000
+consumer_normal_5   Node3       1Gbps  1  15ms   1000
+consumer_normal_6   Node3       1Gbps  1  25ms   1000
+consumer_normal_7   Node3       1Gbps  1  10ms   1000
+consumer_normal_8   Node3       1Gbps  1  30ms   1000
+consumer_normal_9   Node3       1Gbps  1  20ms   1000
+
+consumer_normal_10  Node4       1Gbps  1  15ms   1000
+consumer_normal_11  Node4       1Gbps  1  25ms   1000
+consumer_normal_12  Node4       1Gbps  1  15ms   1000
+consumer_normal_13  Node4       1Gbps  1  30ms   1000
+consumer_normal_14  Node4       1Gbps  1  15ms   1000
+consumer_normal_15  Node4       1Gbps  1  10ms   1000
+consumer_normal_16  Node4       1Gbps  1  20ms   1000
+consumer_normal_17  Node4       1Gbps  1  15ms   1000
+
+# malicious consumer links (sample delay 15ms)
+consumer_malicious_0   Node2       1Gbps  1  15ms   1000
+consumer_malicious_1   Node2       1Gbps  1  10ms   1000
+consumer_malicious_2   Node2       1Gbps  1  5ms   1000
+consumer_malicious_3   Node2       1Gbps  1  20ms   1000
+
+consumer_malicious_4   Node3       1Gbps  1  10ms   1000
+consumer_malicious_5   Node3       1Gbps  1  15ms   1000
+consumer_malicious_6   Node3       1Gbps  1  25ms   1000
+consumer_malicious_7   Node3       1Gbps  1  10ms   1000
+consumer_malicious_8   Node3       1Gbps  1  30ms   1000
+consumer_malicious_9   Node3       1Gbps  1  20ms   1000
+
+consumer_malicious_10  Node4       1Gbps  1  15ms   1000
+consumer_malicious_11  Node4       1Gbps  1  25ms   1000
+consumer_malicious_12  Node4       1Gbps  1  15ms   1000
+consumer_malicious_13  Node4       1Gbps  1  30ms   1000
+consumer_malicious_14  Node4       1Gbps  1  15ms   1000
+consumer_malicious_15  Node4       1Gbps  1  10ms   1000
+consumer_malicious_16  Node4       1Gbps  1  20ms   1000
+consumer_malicious_17  Node4       1Gbps  1  15ms   1000
+

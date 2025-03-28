@@ -44,11 +44,12 @@ main(int argc, char* argv[])
   }
   std::cout << std::endl;
 
-  if (argc < 5) {
+  if (argc < 6) {
     std::cerr << "Usage: ./waf --run=ndn-cpa para1 para2 para3 para4\n";
     std::cerr << "para1 is \"topo-cpa-basic-A-\", \"topo-cpa-basic-A+\", \"topo-cpa-DFN-A-\", \"topo-cpa-DFN-A+\"\n";
     std::cerr << "para2 is \"rate-static\", \"rate-dynamic\"\n";
     std::cerr << "para3 is intensity\n";
+    std::cerr << "para4 is intensity change per 0.05s\n";
     std::cerr << "para4 is seq range\n";
     return 1;
   }
@@ -56,12 +57,14 @@ main(int argc, char* argv[])
   std::string para1 = argv[1];
   std::string para2 = argv[2];
   double para3 = std::stod(argv[3]);
-  uint32_t para4 = std::stoul(argv[4]);
+  double para4 = std::stoul(argv[4]);
+  uint32_t para5 = std::stoul(argv[5]);
   
-    std::cout<<"para1 "<<para1<<std::endl;
-    std::cout<<"para2 "<<para2<<std::endl;
-    std::cout<<"para3 "<<para3<<std::endl;
-    std::cout<<"para4 "<<para4<<std::endl;
+  std::cout<<"para1: topo= "<<para1<<std::endl;
+  std::cout<<"para2: isDynamic= "<<para2<<std::endl;
+  std::cout<<"para3: intensity= "<<para3<<std::endl;
+  std::cout<<"para4: intensity change as a whole= "<<para4<<" per 0.05s"<<std::endl;
+  std::cout<<"para5: seq range= "<<para5<<std::endl;
 
   std::vector<std::string> validPara1 = {"topo-cpa-basic-A-", "topo-cpa-basic-A+", "topo-cpa-DFN-A-", "topo-cpa-DFN-A+"};
   std::vector<std::string> validPara2 = {"rate-static", "rate-dynamic"};
@@ -71,7 +74,7 @@ main(int argc, char* argv[])
     std::cerr << "Invalid parameters.\n";
     std::cerr << "Usage: ./waf --run=ndn-cpa para1 para2 para3\n";
     std::cerr << "para1 is \"topo-cpa-basic-A-\", \"topo-cpa-basic-A+\", \"topo-cpa-DFN-A-\", \"topo-cpa-DFN-A+\"\n";
-    std::cerr << "para2 is \"rate_static\", \"rate_dynamic\"\n";
+    std::cerr << "para2 is \"rate-static\", \"rate-dynamic\"\n";
     return 1;
   }
 
@@ -80,7 +83,7 @@ main(int argc, char* argv[])
   topologyReader.SetFileName("src/ndnSIM/examples/topologies/" + para1 + ".txt");
   topologyReader.Read();
 
-  if(para1 == "topo-cpa-basic-A-"){
+  if(para1 == "topo-cpa-basic-A-"|| para1 == "topo-cpa-basic-A+"){
     // Install NDN stack on all nodes
     ndn::StackHelper ndnHelper;
     //只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity
@@ -91,16 +94,25 @@ main(int argc, char* argv[])
     //只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity只有non-coop是popularity
     ndnHelper.setPolicy("nfd::cs::lru");
     ndnHelper.setCsSize(100);
-    for(int i = 0; i <= 4; i++){
+    for(int i = 1; i <= 4; i++){
       ndnHelper.Install(Names::Find<Node>("Node" + std::to_string(i)));
     }
     //消费者节点要禁用缓存，不然兴趣包在消费者节点的缓存就满足了，不会转发到边缘节点
+    //producer也禁用缓存
     ndnHelper.setCsSize(0);
+    ndnHelper.Install(Names::Find<Node>("Node" + std::to_string(0)));
     for (int i = 0; i <= 17; i++) {
       ndnHelper.Install(Names::Find<Node>("consumer_normal_"+std::to_string(i)));
     }
-    for (int i = 0; i <= 2; i++) {
-      ndnHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
+    if(para1 == "topo-cpa-basic-A-"){
+      for (int i = 0; i <= 2; i++) {
+        ndnHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
+      }
+    }
+    if(para1 == "topo-cpa-basic-A+"){
+      for (int i = 0; i <= 17; i++) {
+        ndnHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
+      }
     }
     // Set BestRoute strategy
     ndn::StrategyChoiceHelper::InstallAll("/", "/localhost/nfd/strategy/best-route");
@@ -130,24 +142,51 @@ main(int argc, char* argv[])
       //consumerHelper.Install(normal_consumers[i]);
       consumerHelper.Install(Names::Find<Node>("consumer_normal_"+std::to_string(i)));
     }
-    std::cout<<"sum_rate"<<sum_rate;
-    uint32_t rate_attacker = sum_rate * para3 / 3;
-    std::cout<<"rate_attacker"<<rate_attacker;
-    //攻击者
-    for (int i = 0; i <= 2; i++) {
-      ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCPA");
-      consumerHelper.SetPrefix("/prefix");
-      consumerHelper.SetAttribute("vMax", UintegerValue(rate_attacker)); 
-      if(para2 == "rate-dynamic"){
-        consumerHelper.SetAttribute("isDynamic", BooleanValue(true));
+    if(para1 == "topo-cpa-basic-A-"){
+      std::cout<<"sum_rate"<<sum_rate;
+      double rate_attacker = sum_rate * para3 / 3.0;
+      std::cout<<"rate_attacker"<<rate_attacker;
+      double vStep_attacker = para4 / 3.0;
+      std::cout<<"vStep_attacker"<<vStep_attacker;
+      //攻击者
+      for (int i = 0; i <= 2; i++) {
+        ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCPA");
+        consumerHelper.SetPrefix("/prefix");
+        consumerHelper.SetAttribute("vMax", DoubleValue(rate_attacker)); 
+        if(para2 == "rate-dynamic"){
+          consumerHelper.SetAttribute("isDynamic", BooleanValue(true));
+        }
+        consumerHelper.SetAttribute("vStep", DoubleValue(vStep_attacker));
+        consumerHelper.SetAttribute("tStep", TimeValue(Seconds(0.05)));
+        consumerHelper.SetAttribute("MaxSeqA", UintegerValue(10000));
+        consumerHelper.SetAttribute("range", UintegerValue(para5));
+        consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(5)));//攻击时刻
+        //consumerHelper.Install(malicious_consumers[i]);
+        consumerHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
       }
-      consumerHelper.SetAttribute("vStep", UintegerValue(100));
-      consumerHelper.SetAttribute("tStep", TimeValue(Seconds(0.05)));
-      consumerHelper.SetAttribute("MaxSeqA", UintegerValue(10000));
-      consumerHelper.SetAttribute("range", UintegerValue(para4));
-      consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(5)));//攻击时刻
-      //consumerHelper.Install(malicious_consumers[i]);
-      consumerHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
+    }
+    if(para1 == "topo-cpa-basic-A+"){
+      std::cout<<"sum_rate"<<sum_rate;
+      double rate_attacker = sum_rate * para3 / 18.0;
+      std::cout<<"rate_attacker"<<rate_attacker;
+      double vStep_attacker = para4 / 18.0;
+      std::cout<<"vStep_attacker"<<vStep_attacker;
+      //攻击者
+      for (int i = 0; i <= 17; i++) {
+        ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCPA");
+        consumerHelper.SetPrefix("/prefix");
+        consumerHelper.SetAttribute("vMax", DoubleValue(rate_attacker)); 
+        if(para2 == "rate-dynamic"){
+          consumerHelper.SetAttribute("isDynamic", BooleanValue(true));
+        }
+        consumerHelper.SetAttribute("vStep", DoubleValue(vStep_attacker));
+        consumerHelper.SetAttribute("tStep", TimeValue(Seconds(0.05)));
+        consumerHelper.SetAttribute("MaxSeqA", UintegerValue(10000));
+        consumerHelper.SetAttribute("range", UintegerValue(para5));
+        consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(5)));//攻击时刻
+        //consumerHelper.Install(malicious_consumers[i]);
+        consumerHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
+      }
     }
 
     ndn::AppHelper producerHelper("ns3::ndn::Producer");
