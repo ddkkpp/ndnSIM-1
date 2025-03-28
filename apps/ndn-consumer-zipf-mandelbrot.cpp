@@ -42,10 +42,13 @@ computeMetricsWDCallback(ConsumerZipfMandelbrot *ptr)
     NS_LOG_INFO("retrievalTime in this period = (没有data返回)");
   }
   else{
+    NS_LOG_INFO("m_numOfSentInterest in this period = "<<ptr->m_numOfSentInterest);
+    NS_LOG_INFO("ISR in this period = "<<double(ptr->m_numOfReceivedData) / double(ptr->m_numOfSentInterest));
     NS_LOG_INFO("retrievalTime in this period = "<<double(ptr->m_sumRetrievalTime.GetMilliSeconds()) / double(ptr->m_numOfReceivedData));
     NS_LOG_INFO("hopCount in this period = "<<double(ptr->m_sumOfHopCount) / double(ptr->m_numOfReceivedData));
   }
   ptr->m_numOfReceivedData=0;
+  ptr->m_numOfSentInterest=0;
   ptr->m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
   ptr->m_sumOfHopCount=0;
   ptr->computeMetricsWD.Ping(MilliSeconds(500));
@@ -202,6 +205,9 @@ ConsumerZipfMandelbrot::SendPacket()
     seq = ConsumerZipfMandelbrot::GetNextSeq();
     m_seq++;
   }
+
+
+  m_numOfSentInterest ++;
 
   // std::cout << Simulator::Now ().ToDouble (Time::S) << "s -> " << seq << "\n";
 
