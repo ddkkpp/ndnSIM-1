@@ -44,12 +44,11 @@ main(int argc, char* argv[])
   }
   std::cout << std::endl;
 
-  if (argc < 6) {
+  if (argc < 5) {
     std::cerr << "Usage: ./waf --run=ndn-cpa para1 para2 para3 para4\n";
     std::cerr << "para1 is \"topo-cpa-basic-A-\", \"topo-cpa-basic-A+\", \"topo-cpa-DFN-A-\", \"topo-cpa-DFN-A+\"\n";
     std::cerr << "para2 is \"rate-static\", \"rate-dynamic\"\n";
     std::cerr << "para3 is intensity\n";
-    std::cerr << "para4 is intensity change per 0.05s\n";
     std::cerr << "para4 is seq range\n";
     return 1;
   }
@@ -57,14 +56,12 @@ main(int argc, char* argv[])
   std::string para1 = argv[1];
   std::string para2 = argv[2];
   double para3 = std::stod(argv[3]);
-  double para4 = std::stoul(argv[4]);
-  uint32_t para5 = std::stoul(argv[5]);
+  uint32_t para4 = std::stoul(argv[4]);
   
   std::cout<<"para1: topo= "<<para1<<std::endl;
   std::cout<<"para2: isDynamic= "<<para2<<std::endl;
   std::cout<<"para3: intensity= "<<para3<<std::endl;
-  std::cout<<"para4: intensity change as a whole= "<<para4<<" per 0.05s"<<std::endl;
-  std::cout<<"para5: seq range= "<<para5<<std::endl;
+  std::cout<<"para4: seq range= "<<para4<<std::endl;
 
   std::vector<std::string> validPara1 = {"topo-cpa-basic-A-", "topo-cpa-basic-A+", "topo-cpa-DFN-A-", "topo-cpa-DFN-A+"};
   std::vector<std::string> validPara2 = {"rate-static", "rate-dynamic"};
@@ -146,7 +143,7 @@ main(int argc, char* argv[])
       std::cout<<"sum_rate"<<sum_rate;
       double rate_attacker = sum_rate * para3 / 3.0;
       std::cout<<"rate_attacker"<<rate_attacker;
-      double vStep_attacker = para4 / 3.0;
+      double vStep_attacker = 30.0 / 3.0;
       std::cout<<"vStep_attacker"<<vStep_attacker;
       //攻击者
       for (int i = 0; i <= 2; i++) {
@@ -159,7 +156,7 @@ main(int argc, char* argv[])
         consumerHelper.SetAttribute("vStep", DoubleValue(vStep_attacker));
         consumerHelper.SetAttribute("tStep", TimeValue(Seconds(0.05)));
         consumerHelper.SetAttribute("MaxSeqA", UintegerValue(10000));
-        consumerHelper.SetAttribute("range", UintegerValue(para5));
+        consumerHelper.SetAttribute("range", UintegerValue(para4));
         consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(5)));//攻击时刻
         //consumerHelper.Install(malicious_consumers[i]);
         consumerHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
@@ -169,7 +166,7 @@ main(int argc, char* argv[])
       std::cout<<"sum_rate"<<sum_rate;
       double rate_attacker = sum_rate * para3 / 18.0;
       std::cout<<"rate_attacker"<<rate_attacker;
-      double vStep_attacker = para4 / 18.0;
+      double vStep_attacker = 30.0 / 18.0;
       std::cout<<"vStep_attacker"<<vStep_attacker;
       //攻击者
       for (int i = 0; i <= 17; i++) {
@@ -182,7 +179,7 @@ main(int argc, char* argv[])
         consumerHelper.SetAttribute("vStep", DoubleValue(vStep_attacker));
         consumerHelper.SetAttribute("tStep", TimeValue(Seconds(0.05)));
         consumerHelper.SetAttribute("MaxSeqA", UintegerValue(10000));
-        consumerHelper.SetAttribute("range", UintegerValue(para5));
+        consumerHelper.SetAttribute("range", UintegerValue(para4));
         consumerHelper.SetAttribute("StartTime", TimeValue(Seconds(5)));//攻击时刻
         //consumerHelper.Install(malicious_consumers[i]);
         consumerHelper.Install(Names::Find<Node>("consumer_malicious_"+std::to_string(i)));
@@ -200,9 +197,17 @@ main(int argc, char* argv[])
     ndnGlobalRoutingHelper.CalculateAllPossibleRoutes();
   }
 
-
+  // (noop) keep file touched: variance test is updated in Forwarder (Levene with t-digest)
+  // note: Forwarder now maintains an all-time TOP-K popularity map (space-saving)
+  // note: CS decision now caches if hit recent TOP-K OR all-time TOP-K
+  // note: CS decision uses rolling popularity maps:
+  //       - !isNextPeriodOfAttack: lastSequenceMap + lastAllTimeSequenceMap
+  //       -  isNextPeriodOfAttack: lastLastSequenceMap + lastLastAllTimeSequenceMap
 
   Simulator::Stop(Seconds(30.01));
+
+  // ndn::AppDelayTracer::InstallAll("/media/sf_ndnsim/ours-app-delays-trace.txt");
+  // ndn::CsTracer::InstallAll("/media/sf_ndnsim/ours-cs-trace.txt", Seconds(1));
 
   Simulator::Run();
   Simulator::Destroy();

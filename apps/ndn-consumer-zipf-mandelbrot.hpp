@@ -19,96 +19,108 @@
  * @author Xiaoke Jiang <shock.jiang@gmail.com>
  **/
 
-#ifndef NDN_CONSUMER_ZIPF_MANDELBROT_H_
-#define NDN_CONSUMER_ZIPF_MANDELBROT_H_
+ #ifndef NDN_CONSUMER_ZIPF_MANDELBROT_H_
+ #define NDN_CONSUMER_ZIPF_MANDELBROT_H_
+ 
+ #include "ns3/ndnSIM/model/ndn-common.hpp"
+ 
+ #include "ndn-consumer.hpp"
+ #include "ndn-consumer-cbr.hpp"
+ 
+ #include "ns3/ptr.h"
+ #include "ns3/log.h"
+ #include "ns3/simulator.h"
+ #include "ns3/packet.h"
+ #include "ns3/callback.h"
+ #include "ns3/string.h"
+ #include "ns3/uinteger.h"
+ #include "ns3/double.h"
+ #include "ns3/random-variable-stream.h"
+ #include "ns3/rng-seed-manager.h"
+ #include "ns3/watchdog.h"
+ 
+ namespace ns3 {
+ namespace ndn {
+ 
+ /**
+  * @ingroup ndn-apps
+  * @brief NDN app requesting contents following Zipf-Mandelbrot Distbituion
+  *
+  * The class implements an app which requests contents following Zipf-Mandelbrot Distribution
+  * Here is the explaination of Zipf-Mandelbrot Distribution:
+  *http://en.wikipedia.org/wiki/Zipf%E2%80%93Mandelbrot_law
+  */
+ class ConsumerZipfMandelbrot : public ConsumerCbr {
+ public:
+   static TypeId
+   GetTypeId();
+ 
+   /**
+    * \brief Default constructor
+    * Sets up randomized Number Generator (RNG)
+    * Note: m_seq of its parent class ConsumerCbr here is used to record the interest number
+    */
+   ConsumerZipfMandelbrot();
+   virtual ~ConsumerZipfMandelbrot();
+ 
+   friend void computeMetricsWDCallback(ConsumerZipfMandelbrot *ptr);//友元函数可以访问类的非公开成员
+ 
+  void SetWatchDog(double t);
+ 
+   virtual void
+   SendPacket();
+ 
+   uint32_t
+   GetNextSeq();
+ 
+   virtual void
+   OnData(shared_ptr<const Data> contentObject);
+ 
+ protected:
+   virtual void
+   ScheduleNextPacket();
+ 
+   Watchdog computeMetricsWD;
+   uint32_t m_numOfReceivedData=0;
+   uint32_t m_numOfSentInterest=0;
+   uint32_t m_sumOfHopCount=0;
+ 
+ private:
+   void
+   SetNumberOfContents(uint32_t numOfContents);
+ 
+   uint32_t
+   GetNumberOfContents() const;
+ 
+   void
+   SetQ(double q);
+ 
+   double
+   GetQ() const;
+ 
+   void
+   SetS(double s);
+ 
+   double
+   GetS() const;
 
-#include "ns3/ndnSIM/model/ndn-common.hpp"
+   void
+   SetStartSeq(uint32_t startSeq);
 
-#include "ndn-consumer.hpp"
-#include "ndn-consumer-cbr.hpp"
+   uint32_t
+   GetStartSeq() const;
+ 
+ private:
+   uint32_t m_N;               // number of the contents
+   double m_q;                 // q in (k+q)^s
+   double m_s;                 // s in (k+q)^s
+   std::vector<double> m_Pcum; // cumulative probability
+ 
+   Ptr<UniformRandomVariable> m_seqRng; // RNG
 
-#include "ns3/ptr.h"
-#include "ns3/log.h"
-#include "ns3/simulator.h"
-#include "ns3/packet.h"
-#include "ns3/callback.h"
-#include "ns3/string.h"
-#include "ns3/uinteger.h"
-#include "ns3/double.h"
-#include "ns3/random-variable-stream.h"
-#include "ns3/rng-seed-manager.h"
-#include "ns3/watchdog.h"
-
-namespace ns3 {
-namespace ndn {
-
-/**
- * @ingroup ndn-apps
- * @brief NDN app requesting contents following Zipf-Mandelbrot Distbituion
- *
- * The class implements an app which requests contents following Zipf-Mandelbrot Distribution
- * Here is the explaination of Zipf-Mandelbrot Distribution:
- *http://en.wikipedia.org/wiki/Zipf%E2%80%93Mandelbrot_law
- */
-class ConsumerZipfMandelbrot : public ConsumerCbr {
-public:
-  static TypeId
-  GetTypeId();
-
-  /**
-   * \brief Default constructor
-   * Sets up randomized Number Generator (RNG)
-   * Note: m_seq of its parent class ConsumerCbr here is used to record the interest number
-   */
-  ConsumerZipfMandelbrot();
-  virtual ~ConsumerZipfMandelbrot();
-
-  friend void computeMetricsWDCallback(ConsumerZipfMandelbrot *ptr);//友元函数可以访问类的非公开成员
-
- void SetWatchDog(double t);
-
-  virtual void
-  SendPacket();
-
-  uint32_t
-  GetNextSeq();
-
-protected:
-  virtual void
-  ScheduleNextPacket();
-
-  Watchdog computeMetricsWD;
-
-private:
-  void
-  SetNumberOfContents(uint32_t numOfContents);
-
-  uint32_t
-  GetNumberOfContents() const;
-
-  void
-  SetQ(double q);
-
-  double
-  GetQ() const;
-
-  void
-  SetS(double s);
-
-  double
-  GetS() const;
-
-private:
-  uint32_t m_N;               // number of the contents
-  double m_q;                 // q in (k+q)^s
-  double m_s;                 // s in (k+q)^s
-  std::vector<double> m_Pcum; // cumulative probability
-
-  Ptr<UniformRandomVariable> m_seqRng; // RNG
-
-  
-};
-
-} /* namespace ndn */
-} /* namespace ns3 */
-#endif /* NDN_CONSUMER_ZIPF_MANDELBROT_H_ */
+   uint32_t m_startSeq = 1;    // sequence number start point (default 1 to maintain original behavior)
+ };
+ 
+ } /* namespace ndn */
+ } /* namespace ns3 */
+ #endif /* NDN_CONSUMER_ZIPF_MANDELBROT_H_ */

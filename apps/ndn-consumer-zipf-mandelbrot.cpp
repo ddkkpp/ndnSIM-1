@@ -70,17 +70,25 @@
                      MakeUintegerAccessor(&ConsumerZipfMandelbrot::SetNumberOfContents,
                                           &ConsumerZipfMandelbrot::GetNumberOfContents),
                      MakeUintegerChecker<uint32_t>())
- 
+
+       .AddAttribute("ZipfStartSeq",
+                     "Start sequence number offset for ZipfMandelbrot consumer (default 1). "
+                     "Actual generated seq range becomes [ZipfStartSeq, ZipfStartSeq + NumberOfContents - 1].",
+                     UintegerValue(1),
+                     MakeUintegerAccessor(&ConsumerZipfMandelbrot::SetStartSeq,
+                                          &ConsumerZipfMandelbrot::GetStartSeq),
+                     MakeUintegerChecker<uint32_t>())
+
        .AddAttribute("q", "parameter of improve rank", StringValue("0.7"),
                      MakeDoubleAccessor(&ConsumerZipfMandelbrot::SetQ,
                                         &ConsumerZipfMandelbrot::GetQ),
                      MakeDoubleChecker<double>())
- 
+
        .AddAttribute("s", "parameter of power", StringValue("0.7"),
                      MakeDoubleAccessor(&ConsumerZipfMandelbrot::SetS,
                                         &ConsumerZipfMandelbrot::GetS),
                      MakeDoubleChecker<double>());
- 
+
    return tid;
  }
  
@@ -88,6 +96,7 @@
    : m_N(100) // needed here to make sure when SetQ/SetS are called, there is a valid value of N
    , m_q(0.7)
    , m_s(0.7)
+   , m_startSeq(1) // default to maintain original behavior
  {
    //设置随机数生成器的种子
    //ns3::RngSeedManager::SetSeed(static_cast<unsigned int>(std::time(0)));
@@ -166,6 +175,19 @@
  }
  
  void
+ ConsumerZipfMandelbrot::SetStartSeq(uint32_t startSeq)
+ {
+   // 与你需求一致：默认1保持原逻辑；其它值则做offset；不允许0
+   m_startSeq = std::max<uint32_t>(1, startSeq);
+ }
+
+ uint32_t
+ ConsumerZipfMandelbrot::GetStartSeq() const
+ {
+   return m_startSeq;
+ }
+
+ void
  ConsumerZipfMandelbrot::SendPacket()
  {
    if (!m_active)
@@ -219,6 +241,7 @@
    shared_ptr<Interest> interest = make_shared<Interest>();
    interest->setNonce(m_rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
    interest->setName(*nameWithSequence);
+   //NS_LOG_INFO("name"<<interest->getName());
  
    //加上ConsumerIdTag
    auto nodeid = GetNode()->GetId();
@@ -275,9 +298,12 @@
        break;
      } // if
    }   // for
-   // content_index = 1;
-   NS_LOG_DEBUG("RandomNumber=" << content_index);
-   return content_index;
+
+   const uint32_t start = std::max<uint32_t>(1, m_startSeq);
+   const uint32_t seq = start + (content_index - 1);
+
+   NS_LOG_DEBUG("RandomNumber(index)=" << content_index << " StartSeq=" << start << " seq=" << seq);
+   return seq;
  }
  
  void
@@ -299,6 +325,23 @@
    }
  }
  
+ void
+ ConsumerZipfMandelbrot::OnData(shared_ptr<const Data> data)
+ {
+ 
+   App::OnData(data); // tracing inside
+ 
+   ++m_numOfReceivedData;
+   
+   int hopCount = 0;
+   auto hopCountTag = data->getTag<lp::HopCountTag>();
+   if (hopCountTag != nullptr) { // e.g., packet came from local node's cache
+     hopCount = *hopCountTag;
+   }
+   NS_LOG_DEBUG("Hop count: " << hopCount);
+   m_sumOfHopCount += hopCount;
+   NS_LOG_DEBUG("m_sumOfHopCount= " << m_sumOfHopCount);
+ }
+ 
  } /* namespace ndn */
  } /* namespace ns3 */
- 
