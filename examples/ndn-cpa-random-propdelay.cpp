@@ -1,13 +1,14 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
- * This example is based on `ndn-cpa.cpp`, but uses `ns3::RandomPropagationDelayModel`
- * on WiFi access links (consumer/attacker <-> edge router) instead of fixed p2p delay.
+ * This example is based on `ndn-cpa.cpp`, but uses point-to-point access links
+ * (consumer/attacker <-> edge router) with per-transmission Normal random delay,
+ * while keeping core links fixed as defined in the topology file.
  *
  * Notes:
- * - The core topology (routers + producer) is still created via AnnotatedTopologyReader.
+ * - The core topology (routers + producer) is created via AnnotatedTopologyReader (p2p, fixed Delay).
  * - The topology files `topo-cpa-basic-A--random-propdelay.txt` and
  *   `topo-cpa-basic-A+-random-propdelay.txt` intentionally omit access links; those
- *   are created here as WiFi links.
+ *   are created here as p2p links with dynamic delay enabled only on those access channels.
  */
 
 #include <algorithm>
@@ -22,17 +23,36 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/ndnSIM-module.h"
 
-#include "ns3/wifi-module.h"
-#include "ns3/propagation-module.h"
-
 #include "ns3/ndnSIM/apps/ndn-consumer-pcon.hpp"
 #include "common/global.hpp"
 
 namespace ns3 {
 
+static bool
+HasPointToPointDevice(const Ptr<Node>& node)
+{
+  for (uint32_t i = 0; i < node->GetNDevices(); ++i) {
+    if (DynamicCast<PointToPointNetDevice>(node->GetDevice(i)) != nullptr) {
+      return true;
+    }
+  }
+  return false;
+}
+
 static void
-InstallWifiAccessLink(const std::string& leafName, const std::string& routerName,
-                      double meanDelayMs, double stddevDelayMs, double boundMs)
+AbortIfConsumerHasP2p(const std::string& nodeName)
+{
+  Ptr<Node> node = Names::Find<Node>(nodeName);
+  NS_ABORT_MSG_IF(node == nullptr, "Node not found: " << nodeName);
+  NS_ABORT_MSG_IF(HasPointToPointDevice(node),
+                  "Topology must omit access (consumer/attacker) p2p links for random-propdelay. "
+                  "Found PointToPointNetDevice on node: "
+                    << nodeName << ". Use *-random-propdelay.txt core-only topology.");
+}
+
+static void
+InstallP2pAccessLink(const std::string& leafName, const std::string& routerName,
+                     double meanDelayMs, double stddevDelayMs, double boundMs)
 {
   Ptr<Node> leaf = Names::Find<Node>(leafName);
   Ptr<Node> router = Names::Find<Node>(routerName);
@@ -48,26 +68,23 @@ InstallWifiAccessLink(const std::string& leafName, const std::string& routerName
   normal->SetAttribute("Variance", DoubleValue(varianceS2));
   normal->SetAttribute("Bound", DoubleValue(boundS));
 
-  YansWifiChannelHelper wifiChannel;
-  wifiChannel.SetPropagationDelay("ns3::RandomPropagationDelayModel", "Variable", PointerValue(normal));
-  wifiChannel.AddPropagationLoss("ns3::FixedRssLossModel", "Rss", DoubleValue(-40.0));
+  PointToPointHelper p2p;
+  // Match the original CPA topo access links: 1Gbps, queue 1000 packets.
+  p2p.SetDeviceAttribute("DataRate", StringValue("1Gbps"));
+  p2p.SetQueue("ns3::DropTailQueue<Packet>", "MaxSize", StringValue("1000p"));
+  // Base Delay is irrelevant when dynamic delay is enabled, but keep it 0 for clarity.
+  p2p.SetChannelAttribute("Delay", TimeValue(Seconds(0)));
 
-  YansWifiPhyHelper phy = YansWifiPhyHelper::Default();
-  phy.SetChannel(wifiChannel.Create());
+  NetDeviceContainer nd = p2p.Install(router, leaf);
 
-  WifiHelper wifi;
-  wifi.SetStandard(WIFI_STANDARD_80211g);
-  wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager",
-                               "DataMode", StringValue("ErpOfdmRate54Mbps"),
-                               "ControlMode", StringValue("ErpOfdmRate24Mbps"));
+  Ptr<PointToPointNetDevice> dev0 = DynamicCast<PointToPointNetDevice>(nd.Get(0));
+  NS_ABORT_MSG_IF(dev0 == nullptr, "Expected PointToPointNetDevice");
+  Ptr<PointToPointChannel> ch = DynamicCast<PointToPointChannel>(dev0->GetChannel());
+  NS_ABORT_MSG_IF(ch == nullptr, "Expected PointToPointChannel");
 
-  WifiMacHelper mac;
-  mac.SetType("ns3::AdhocWifiMac");
-
-  NodeContainer nodes;
-  nodes.Add(router);
-  nodes.Add(leaf);
-  wifi.Install(phy, mac, nodes);
+  // Enable per-transmission dynamic delay ONLY on this access channel.
+  ch->SetAttribute("EnableDynamicDelay", BooleanValue(true));
+  ch->SetAttribute("DynamicDelayRandomVariable", PointerValue(normal));
 }
 
 int
@@ -108,31 +125,47 @@ main(int argc, char* argv[])
   topologyReader.SetFileName("src/ndnSIM/examples/topologies/" + para1 + "-random-propdelay.txt");
   topologyReader.Read();
 
-  // Create WiFi access links (consumer/attacker <-> edge router) with RandomPropagationDelayModel.
+  // Safety check: this example assumes access links are NOT in the topology file.
+  // Core links are created by AnnotatedTopologyReader (p2p), access links are created below (WiFi).
+  for (int i = 0; i <= 17; i++) {
+    AbortIfConsumerHasP2p("consumer_normal_" + std::to_string(i));
+  }
+  if (para1 == "topo-cpa-basic-A-") {
+    for (int i = 0; i <= 2; i++) {
+      AbortIfConsumerHasP2p("consumer_malicious_" + std::to_string(i));
+    }
+  }
+  if (para1 == "topo-cpa-basic-A+") {
+    for (int i = 0; i <= 17; i++) {
+      AbortIfConsumerHasP2p("consumer_malicious_" + std::to_string(i));
+    }
+  }
+
+  // Create p2p access links (consumer/attacker <-> edge router) with per-transmission Normal delay.
   for (int i = 0; i <= 3; i++) {
-    InstallWifiAccessLink("consumer_normal_" + std::to_string(i), "Node2", muMs, sigmaMs, boundMs);
+    InstallP2pAccessLink("consumer_normal_" + std::to_string(i), "Node2", muMs, sigmaMs, boundMs);
   }
   for (int i = 4; i <= 9; i++) {
-    InstallWifiAccessLink("consumer_normal_" + std::to_string(i), "Node3", muMs, sigmaMs, boundMs);
+    InstallP2pAccessLink("consumer_normal_" + std::to_string(i), "Node3", muMs, sigmaMs, boundMs);
   }
   for (int i = 10; i <= 17; i++) {
-    InstallWifiAccessLink("consumer_normal_" + std::to_string(i), "Node4", muMs, sigmaMs, boundMs);
+    InstallP2pAccessLink("consumer_normal_" + std::to_string(i), "Node4", muMs, sigmaMs, boundMs);
   }
 
   if (para1 == "topo-cpa-basic-A-") {
-    InstallWifiAccessLink("consumer_malicious_0", "Node2", muMs, sigmaMs, boundMs);
-    InstallWifiAccessLink("consumer_malicious_1", "Node3", muMs, sigmaMs, boundMs);
-    InstallWifiAccessLink("consumer_malicious_2", "Node4", muMs, sigmaMs, boundMs);
+    InstallP2pAccessLink("consumer_malicious_0", "Node2", muMs, sigmaMs, boundMs);
+    InstallP2pAccessLink("consumer_malicious_1", "Node3", muMs, sigmaMs, boundMs);
+    InstallP2pAccessLink("consumer_malicious_2", "Node4", muMs, sigmaMs, boundMs);
   }
   else if (para1 == "topo-cpa-basic-A+") {
     for (int i = 0; i <= 3; i++) {
-      InstallWifiAccessLink("consumer_malicious_" + std::to_string(i), "Node2", muMs, sigmaMs, boundMs);
+      InstallP2pAccessLink("consumer_malicious_" + std::to_string(i), "Node2", muMs, sigmaMs, boundMs);
     }
     for (int i = 4; i <= 9; i++) {
-      InstallWifiAccessLink("consumer_malicious_" + std::to_string(i), "Node3", muMs, sigmaMs, boundMs);
+      InstallP2pAccessLink("consumer_malicious_" + std::to_string(i), "Node3", muMs, sigmaMs, boundMs);
     }
     for (int i = 10; i <= 17; i++) {
-      InstallWifiAccessLink("consumer_malicious_" + std::to_string(i), "Node4", muMs, sigmaMs, boundMs);
+      InstallP2pAccessLink("consumer_malicious_" + std::to_string(i), "Node4", muMs, sigmaMs, boundMs);
     }
   }
 
