@@ -29,7 +29,18 @@
 #include "ns3/ndnSIM/NFD/daemon/fw/multicast-strategy.hpp"
 #include "common/global.hpp"
 #include "ns3/ndnSIM/apps/ndn-consumer-pcon.hpp"
-namespace ns3 {   
+namespace ns3 {
+
+static void
+PrintCliArgs(int argc, char* argv[], const char* progName)
+{
+  std::cout << "[" << progName << "] argc=" << argc << "\n";
+  std::cout << "[" << progName << "] argv:";
+  for (int i = 0; i < argc; ++i) {
+    std::cout << " " << argv[i];
+  }
+  std::cout << std::endl;
+}
 
 int
 main(int argc, char* argv[])
@@ -37,12 +48,7 @@ main(int argc, char* argv[])
   CommandLine cmd;
   cmd.Parse(argc, argv);
 
-  std::cout << "命令行参数数量: " << argc << std::endl;
-  std::cout << "所有参数: ";
-  for (int i = 0; i < argc; i++) {
-    std::cout << argv[i] << " ";
-  }
-  std::cout << std::endl;
+  PrintCliArgs(argc, argv, "ndn-cpa");
 
   if (argc < 5) {
     std::cerr << "Usage: ./waf --run=ndn-cpa para1 para2 para3 para4\n";

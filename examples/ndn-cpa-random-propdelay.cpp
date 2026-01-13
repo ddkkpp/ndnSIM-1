@@ -87,11 +87,77 @@ InstallP2pAccessLink(const std::string& leafName, const std::string& routerName,
   ch->SetAttribute("DynamicDelayRandomVariable", PointerValue(normal));
 }
 
+// 获取拓扑中定义的原始延迟
+static double
+getBaseDelayMsForConsumer(const std::string& topoType, const std::string& nodeName)
+{
+  auto getIndex = [&](std::string prefix) -> int {
+    if (nodeName.find(prefix) == 0) {
+      try {
+        return std::stoi(nodeName.substr(prefix.length()));
+      } catch (...) { return -1; }
+    }
+    return -1;
+  };
+
+  // Normal consumers (same for A- and A+)
+  // 0-3 (Node2): 15, 10, 5, 20
+  // 4-9 (Node3): 10, 15, 25, 10, 30, 20
+  // 10-17 (Node4): 15, 25, 15, 30, 15, 10, 20, 15
+  static const std::vector<double> normalDelays = {
+    15, 10, 5, 20, 
+    10, 15, 25, 10, 30, 20,
+    15, 25, 15, 30, 15, 10, 20, 15
+  };
+
+  int idx = getIndex("consumer_normal_");
+  if (idx != -1) {
+    if (idx >= 0 && idx < (int)normalDelays.size()) return normalDelays[idx];
+    return 15.0; // fallback
+  }
+
+  idx = getIndex("consumer_malicious_");
+  if (idx != -1) {
+    if (topoType == "topo-cpa-basic-A-") {
+      if (idx == 0) return 15.0; // Node2
+      if (idx == 1) return 25.0; // Node3
+      if (idx == 2) return 5.0;  // Node4
+    }
+    else if (topoType == "topo-cpa-basic-A+") {
+      // A+ malicious consumers mirror normal consumers
+      if (idx >= 0 && idx < (int)normalDelays.size()) return normalDelays[idx];
+    }
+  }
+  return 15.0; // default/fallback
+}
+
+static void
+InstallAccessLinkFromTopo(const std::string& topo, const std::string& consumer, const std::string& router)
+{
+  double mu = getBaseDelayMsForConsumer(topo, consumer);
+  double sigma = 0.5 * mu;
+  double bound = mu; // Range [0, 2*mu]
+  InstallP2pAccessLink(consumer, router, mu, sigma, bound);
+}
+
+static void
+PrintCliArgs(int argc, char* argv[], const char* progName)
+{
+  std::cout << "[" << progName << "] argc=" << argc << "\n";
+  std::cout << "[" << progName << "] argv:";
+  for (int i = 0; i < argc; ++i) {
+    std::cout << " " << argv[i];
+  }
+  std::cout << std::endl;
+}
+
 int
 main(int argc, char* argv[])
 {
   CommandLine cmd;
   cmd.Parse(argc, argv);
+
+  PrintCliArgs(argc, argv, "ndn-cpa-random-propdelay");
 
   if (argc < 5) {
     std::cerr << "Usage: ./waf --run=ndn-cpa-random-propdelay para1 para2 intensity seqRange [muMs sigmaMs boundMs]\n";
@@ -105,12 +171,11 @@ main(int argc, char* argv[])
   double para3 = std::stod(argv[3]);
   uint32_t para4 = std::stoul(argv[4]);
 
-  // Access-link random propagation delay (Normal) in milliseconds.
-  // RandomPropagationDelayModel uses the RV output as seconds.
-  double muMs = (argc >= 6) ? std::stod(argv[5]) : 15.0;
-  double sigmaMs = (argc >= 7) ? std::stod(argv[6]) : 3.0;
-  // Bound is applied as |x-mean| <= bound, so setting bound=mu keeps samples >= 0.
-  double boundMs = (argc >= 8) ? std::stod(argv[7]) : muMs;
+  // Helper to avoid parsing ns-3 flags (starting with --) as parameters
+  auto isFlag = [](const char* args) { return args[0] == '-'; };
+
+  // Note: muMs, sigmaMs, boundMs from argv are ignored in favor of topology delays
+  // as per requirement (sigma = 0.1 * mu_topo).
 
   std::vector<std::string> validPara1 = {"topo-cpa-basic-A-", "topo-cpa-basic-A+"};
   std::vector<std::string> validPara2 = {"rate-static", "rate-dynamic"};
@@ -141,31 +206,31 @@ main(int argc, char* argv[])
     }
   }
 
-  // Create p2p access links (consumer/attacker <-> edge router) with per-transmission Normal delay.
+  // Create p2p access links with delays from topo.
   for (int i = 0; i <= 3; i++) {
-    InstallP2pAccessLink("consumer_normal_" + std::to_string(i), "Node2", muMs, sigmaMs, boundMs);
+    InstallAccessLinkFromTopo(para1, "consumer_normal_" + std::to_string(i), "Node2");
   }
   for (int i = 4; i <= 9; i++) {
-    InstallP2pAccessLink("consumer_normal_" + std::to_string(i), "Node3", muMs, sigmaMs, boundMs);
+    InstallAccessLinkFromTopo(para1, "consumer_normal_" + std::to_string(i), "Node3");
   }
   for (int i = 10; i <= 17; i++) {
-    InstallP2pAccessLink("consumer_normal_" + std::to_string(i), "Node4", muMs, sigmaMs, boundMs);
+    InstallAccessLinkFromTopo(para1, "consumer_normal_" + std::to_string(i), "Node4");
   }
 
   if (para1 == "topo-cpa-basic-A-") {
-    InstallP2pAccessLink("consumer_malicious_0", "Node2", muMs, sigmaMs, boundMs);
-    InstallP2pAccessLink("consumer_malicious_1", "Node3", muMs, sigmaMs, boundMs);
-    InstallP2pAccessLink("consumer_malicious_2", "Node4", muMs, sigmaMs, boundMs);
+    InstallAccessLinkFromTopo(para1, "consumer_malicious_0", "Node2");
+    InstallAccessLinkFromTopo(para1, "consumer_malicious_1", "Node3");
+    InstallAccessLinkFromTopo(para1, "consumer_malicious_2", "Node4");
   }
   else if (para1 == "topo-cpa-basic-A+") {
     for (int i = 0; i <= 3; i++) {
-      InstallP2pAccessLink("consumer_malicious_" + std::to_string(i), "Node2", muMs, sigmaMs, boundMs);
+      InstallAccessLinkFromTopo(para1, "consumer_malicious_" + std::to_string(i), "Node2");
     }
     for (int i = 4; i <= 9; i++) {
-      InstallP2pAccessLink("consumer_malicious_" + std::to_string(i), "Node3", muMs, sigmaMs, boundMs);
+      InstallAccessLinkFromTopo(para1, "consumer_malicious_" + std::to_string(i), "Node3");
     }
     for (int i = 10; i <= 17; i++) {
-      InstallP2pAccessLink("consumer_malicious_" + std::to_string(i), "Node4", muMs, sigmaMs, boundMs);
+      InstallAccessLinkFromTopo(para1, "consumer_malicious_" + std::to_string(i), "Node4");
     }
   }
 

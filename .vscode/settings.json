@@ -71,5 +71,6 @@
         "valarray": "cpp",
         "variant": "cpp",
         "*.ipp": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/home/dkp/ndnSIM(cpa-ours)/ns-3/src/ndnSIM/NFD/websocketpp/examples/external_io_service"
 }

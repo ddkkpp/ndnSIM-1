@@ -37,11 +37,24 @@ installNormalConsumerAt(const std::string& nodeName, const Time& startTime, int&
   consumerHelper.Install(Names::Find<Node>(nodeName));
 }
 
+static void
+PrintCliArgs(int argc, char* argv[], const char* progName)
+{
+  std::cout << "[" << progName << "] argc=" << argc << "\n";
+  std::cout << "[" << progName << "] argv:";
+  for (int i = 0; i < argc; ++i) {
+    std::cout << " " << argv[i];
+  }
+  std::cout << std::endl;
+}
+
 int
 main(int argc, char* argv[])
 {
   CommandLine cmd;
   cmd.Parse(argc, argv);
+
+  PrintCliArgs(argc, argv, "ndn-cpa-async-normal");
 
   if (argc < 5) {
     std::cerr << "Usage: ./waf --run=ndn-cpa-async-normal para1 para2 para3 para4\n";
