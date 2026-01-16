@@ -73,11 +73,17 @@ public:
   uint32_t
   GetNextSeq();
 
+  virtual void
+  OnData(shared_ptr<const Data> contentObject);
+
 protected:
   virtual void
   ScheduleNextPacket();
 
   Watchdog computeMetricsWD;
+  uint32_t m_numOfReceivedData=0;
+  uint32_t m_numOfSentInterest=0;
+  uint32_t m_sumOfHopCount=0;
 
 private:
   void

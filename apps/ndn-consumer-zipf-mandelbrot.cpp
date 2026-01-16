@@ -299,5 +299,23 @@ ConsumerZipfMandelbrot::ScheduleNextPacket()
   }
 }
 
+void
+ConsumerZipfMandelbrot::OnData(shared_ptr<const Data> data)
+{
+
+  App::OnData(data); // tracing inside
+
+  ++m_numOfReceivedData;
+  
+  int hopCount = 0;
+  auto hopCountTag = data->getTag<lp::HopCountTag>();
+  if (hopCountTag != nullptr) { // e.g., packet came from local node's cache
+    hopCount = *hopCountTag;
+  }
+  NS_LOG_DEBUG("Hop count: " << hopCount);
+  m_sumOfHopCount += hopCount;
+  NS_LOG_DEBUG("m_sumOfHopCount= " << m_sumOfHopCount);
+}
+
 } /* namespace ndn */
 } /* namespace ns3 */

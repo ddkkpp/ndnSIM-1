@@ -248,7 +248,7 @@ Consumer::OnData(shared_ptr<const Data> data)
 
   App::OnData(data); // tracing inside
 
-  ++m_numOfReceivedData;
+  // ++m_numOfReceivedData;
 
   NS_LOG_FUNCTION(this << data);
 
@@ -263,20 +263,22 @@ Consumer::OnData(shared_ptr<const Data> data)
   if (hopCountTag != nullptr) { // e.g., packet came from local node's cache
     hopCount = *hopCountTag;
   }
-  NS_LOG_DEBUG("Hop count: " << hopCount);
-  m_sumOfHopCount += hopCount;
-  NS_LOG_DEBUG("m_sumOfHopCount= " << m_sumOfHopCount);
+  // NS_LOG_DEBUG("Hop count: " << hopCount);
+  // m_sumOfHopCount += hopCount;
+  // NS_LOG_DEBUG("m_sumOfHopCount= " << m_sumOfHopCount);
 
   SeqTimeoutsContainer::iterator entry = m_seqLastDelay.find(seq);
   if (entry != m_seqLastDelay.end()) {
     m_lastRetransmittedInterestDataDelay(this, seq, Simulator::Now() - entry->time, hopCount);
+    m_sumRetrievalTime=m_sumRetrievalTime + Simulator::Now() - entry->time;
+    NS_LOG_DEBUG("m_sumRetrievalTime= "<<m_sumRetrievalTime.GetMilliSeconds());
   }
 
   entry = m_seqFullDelay.find(seq);
   if (entry != m_seqFullDelay.end()) {
     m_firstInterestDataDelay(this, seq, Simulator::Now() - entry->time, m_seqRetxCounts[seq], hopCount);
-    m_sumRetrievalTime=m_sumRetrievalTime + Simulator::Now() - entry->time;
-    NS_LOG_DEBUG("m_sumRetrievalTime= "<<m_sumRetrievalTime.GetMilliSeconds());
+    // m_sumRetrievalTime=m_sumRetrievalTime + Simulator::Now() - entry->time;
+    // NS_LOG_DEBUG("m_sumRetrievalTime= "<<m_sumRetrievalTime.GetMilliSeconds());
   }
 
   m_seqRetxCounts.erase(seq);
