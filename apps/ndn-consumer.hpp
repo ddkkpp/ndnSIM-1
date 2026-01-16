@@ -153,9 +153,6 @@
    Time m_interestLifeTime; ///< \brief LifeTime for interest packet
  
    // Watchdog computeMetricsWD;
-   uint32_t m_numOfReceivedData=0;
-   uint32_t m_numOfSentInterest=0;
-   uint32_t m_sumOfHopCount=0;
    Time m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
  
    /// @cond include_hidden
