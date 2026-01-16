@@ -21,6 +21,7 @@
  #include "ns3/ptr.h"
  #include "ns3/log.h"
  #include "ns3/simulator.h"
+ #include "ns3/nstime.h"
  #include "ns3/packet.h"
  #include "ns3/callback.h"
  #include "ns3/string.h"
@@ -67,7 +68,6 @@
  
  ConsumerCPA::ConsumerCPA()
    : ConsumerCbr()
-   , m_initial(true)
    , m_vNow(0)
  {
  }
@@ -107,6 +107,29 @@
  {
    m_vNow += m_vStep;
    NS_LOG_LOGIC("m_vNow=" << m_vNow);
+
+  // dynamic 模式下 m_vNow 会随时间增大：
+  // 若下一次发送事件已经排在更晚的时刻，需要基于当前 m_vNow 把它提前，
+  // 否则会出现“vNow 已经变大，但仍按旧的低速率等待很久才发包”的现象。
+  if (m_vNow <= 0.0) {
+    return;
+  }
+
+  const Time desiredDelay = Seconds(1.0 / m_vNow);
+  const Time now = Simulator::Now();
+
+  if (m_sendEvent.IsRunning()) {
+    const Time scheduledTime = TimeStep(m_sendEvent.GetTs());
+    // 只在“未来事件比期望更晚”时才提前重排；如果事件就在当前时刻触发，则不动。
+    if (scheduledTime > now && (now + desiredDelay) < scheduledTime) {
+      Simulator::Remove(m_sendEvent);
+      m_sendEvent = Simulator::Schedule(desiredDelay, &ConsumerCPA::SendPacket, this);
+    }
+  }
+  else {
+    // 没有已安排发送事件时，按当前速率安排一次
+    m_sendEvent = Simulator::Schedule(desiredDelay, &ConsumerCPA::SendPacket, this);
+  }
  }
  
  void
@@ -220,7 +243,12 @@
    }
    else if (!m_sendEvent.IsRunning())
    {
-     Time delay = Seconds(1.0 / m_vNow);
+    if (m_vNow <= 0.0) {
+      // 避免除 0：等待下一次 CPA() 把速率抬起来后再重排
+      NS_LOG_LOGIC("m_vNow<=0, delay scheduling until rate increases");
+      return;
+    }
+    Time delay = Seconds(1.0 / m_vNow);
      NS_LOG_LOGIC("delay=" << delay);
      m_sendEvent = Simulator::Schedule(delay, &ConsumerCPA::SendPacket, this);
    }
