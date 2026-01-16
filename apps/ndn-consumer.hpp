@@ -59,7 +59,7 @@
    Consumer();
    virtual ~Consumer(){};
  
-   friend void computeMetricsWDCallback(Consumer *ptr);//友元函数可以访问类的非公开成员
+   //friend void computeMetricsWDCallback(Consumer *ptr);//友元函数可以访问类的非公开成员
  
    // From App
    virtual void
@@ -135,7 +135,7 @@
    GetRetxTimer() const;
  
  
-   void SetWatchDog(double t);
+   //void SetWatchDog(double t);
  
  protected:
    Ptr<UniformRandomVariable> m_rand; ///< @brief nonce generator
@@ -152,10 +152,7 @@
    Name m_interestName;     ///< \brief NDN Name of the Interest (use Name)
    Time m_interestLifeTime; ///< \brief LifeTime for interest packet
  
-   Watchdog computeMetricsWD;
-   uint32_t m_numOfReceivedData=0;
-   uint32_t m_numOfSentInterest=0;
-   uint32_t m_sumOfHopCount=0;
+   // Watchdog computeMetricsWD;
    Time m_sumRetrievalTime=Simulator::Now() -Simulator::Now();
  
    /// @cond include_hidden

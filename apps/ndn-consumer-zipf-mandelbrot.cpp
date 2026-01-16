@@ -21,7 +21,6 @@
 
  #include "ndn-consumer-zipf-mandelbrot.hpp"
  #include <ndn-cxx/lp/tags.hpp>
- #include <fstream>
  
  #include "ns3/log.h"
  
@@ -209,12 +208,6 @@
  
  
    m_numOfSentInterest ++;
-   //seq输入到文件GetNode()->GetId().txt
-    std::ofstream outfile;
-    std::string seqfile = "interest:node_" + std::to_string(GetNode()->GetId()) + ".txt";
-    outfile.open(seqfile);
-    outfile << seq << std::endl;
-    outfile.close();
  
    // std::cout << Simulator::Now ().ToDouble (Time::S) << "s -> " << seq << "\n";
  
@@ -304,6 +297,24 @@
                                                        : Seconds(delay),
                                        &ConsumerZipfMandelbrot::SendPacket, this);
    }
+ }
+ 
+ void
+ ConsumerZipfMandelbrot::OnData(shared_ptr<const Data> data)
+ {
+ 
+   App::OnData(data); // tracing inside
+ 
+   ++m_numOfReceivedData;
+   
+   int hopCount = 0;
+   auto hopCountTag = data->getTag<lp::HopCountTag>();
+   if (hopCountTag != nullptr) { // e.g., packet came from local node's cache
+     hopCount = *hopCountTag;
+   }
+   NS_LOG_DEBUG("Hop count: " << hopCount);
+   m_sumOfHopCount += hopCount;
+   NS_LOG_DEBUG("m_sumOfHopCount= " << m_sumOfHopCount);
  }
  
  } /* namespace ndn */

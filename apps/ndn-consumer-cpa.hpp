@@ -73,8 +73,6 @@
    ScheduleNextPacket();
  
  private:
-   bool m_initial;
- 
    double m_vMax;//最大速率
    bool m_isDynamic;
    double m_vStep;//每次速率变化的值
