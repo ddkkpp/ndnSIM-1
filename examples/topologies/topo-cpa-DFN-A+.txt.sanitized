@@ -1,0 +1,529 @@
+# Topology derived from Code_Generated_Image (8).jpg
+# Version: A+ (1:1 Ratio of Normal and Malicious Consumers)
+# Link Logic: User Specified (0:9, 1:14...)
+# Bandwidth: 100Gbps, Core Delay: 5ms, Consumer Delay: 5-30ms
+
+router
+# Producers (Ref: Image P0 Bottom-Left, P1 Top-Right)
+NodeP0               Producer       15      15
+NodeP1               Producer       135     135
+
+# Routers (Coordinates: Y X) - Remapped to match Image Layout
+# Left Column / Area
+NodeR0               Router         130     15
+NodeR1               Router         115     25
+NodeR2               Router         30      15
+NodeR3               Router         50      25
+NodeR4               Router         75      40
+NodeR5               Router         25      35
+NodeR6               Router         95      30
+
+# Center / Hub Area
+NodeR7               Router         85      50
+NodeR8               Router         60      40
+NodeR9               Router         50      50
+NodeR10              Router         120     45
+NodeR11              Router         15      70
+NodeR12              Router         35      80
+NodeR13              Router         35      60
+NodeR14              Router         95      75
+NodeR15              Router         120     70
+NodeR16              Router         55      75
+NodeR17              Router         75      75
+NodeR18              Router         140     75
+NodeR19              Router         115     90
+
+# Right Column / Area
+NodeR20              Router         105     130
+NodeR21              Router         15      105
+NodeR22              Router         115     105
+NodeR23              Router         75      105
+NodeR24              Router         55      105
+NodeR25              Router         45      130
+NodeR26              Router         35      100
+NodeR27              Router         130     125
+NodeR28              Router         95      120
+NodeR29              Router         70      135
+
+# Normal Consumers (Same as A- version)
+consumer_normal_0    Consumer_normal   135     10
+consumer_normal_1    Consumer_normal   135     11
+consumer_normal_2    Consumer_normal   135     12
+consumer_normal_3    Consumer_normal   135     13
+consumer_normal_4    Consumer_normal   115     15
+consumer_normal_5    Consumer_normal   115     16
+consumer_normal_6    Consumer_normal   115     17
+consumer_normal_7    Consumer_normal   115     18
+consumer_normal_8    Consumer_normal   115     19
+consumer_normal_9    Consumer_normal   115     20
+consumer_normal_10   Consumer_normal   50      15
+consumer_normal_11   Consumer_normal   50      16
+consumer_normal_12   Consumer_normal   50      17
+consumer_normal_13   Consumer_normal   50      18
+consumer_normal_14   Consumer_normal   50      19
+consumer_normal_15   Consumer_normal   50      20
+consumer_normal_16   Consumer_normal   50      10
+consumer_normal_17   Consumer_normal   50      11
+consumer_normal_18   Consumer_normal   20      30
+consumer_normal_19   Consumer_normal   20      31
+consumer_normal_20   Consumer_normal   20      32
+consumer_normal_21   Consumer_normal   20      33
+consumer_normal_22   Consumer_normal   95      20
+consumer_normal_23   Consumer_normal   95      21
+consumer_normal_24   Consumer_normal   95      22
+consumer_normal_25   Consumer_normal   95      23
+consumer_normal_26   Consumer_normal   95      24
+consumer_normal_27   Consumer_normal   95      25
+consumer_normal_28   Consumer_normal   125     40
+consumer_normal_29   Consumer_normal   125     41
+consumer_normal_30   Consumer_normal   125     42
+consumer_normal_31   Consumer_normal   125     43
+consumer_normal_32   Consumer_normal   126     40
+consumer_normal_33   Consumer_normal   126     41
+consumer_normal_34   Consumer_normal   126     42
+consumer_normal_35   Consumer_normal   126     43
+consumer_normal_36   Consumer_normal   65      35
+consumer_normal_37   Consumer_normal   65      36
+consumer_normal_38   Consumer_normal   65      37
+consumer_normal_39   Consumer_normal   65      38
+consumer_normal_40   Consumer_normal   10      70
+consumer_normal_41   Consumer_normal   10      71
+consumer_normal_42   Consumer_normal   10      72
+consumer_normal_43   Consumer_normal   10      73
+consumer_normal_44   Consumer_normal   10      74
+consumer_normal_45   Consumer_normal   10      75
+consumer_normal_46   Consumer_normal   30      80
+consumer_normal_47   Consumer_normal   30      81
+consumer_normal_48   Consumer_normal   30      82
+consumer_normal_49   Consumer_normal   30      83
+consumer_normal_50   Consumer_normal   30      84
+consumer_normal_51   Consumer_normal   30      85
+consumer_normal_52   Consumer_normal   30      86
+consumer_normal_53   Consumer_normal   30      87
+consumer_normal_54   Consumer_normal   145     75
+consumer_normal_55   Consumer_normal   145     76
+consumer_normal_56   Consumer_normal   145     77
+consumer_normal_57   Consumer_normal   145     78
+consumer_normal_58   Consumer_normal   45      75
+consumer_normal_59   Consumer_normal   45      76
+consumer_normal_60   Consumer_normal   45      77
+consumer_normal_61   Consumer_normal   45      78
+consumer_normal_62   Consumer_normal   45      79
+consumer_normal_63   Consumer_normal   45      80
+consumer_normal_64   Consumer_normal   10      105
+consumer_normal_65   Consumer_normal   10      106
+consumer_normal_66   Consumer_normal   10      107
+consumer_normal_67   Consumer_normal   10      108
+consumer_normal_68   Consumer_normal   10      109
+consumer_normal_69   Consumer_normal   10      110
+consumer_normal_70   Consumer_normal   10      111
+consumer_normal_71   Consumer_normal   10      112
+consumer_normal_72   Consumer_normal   40      135
+consumer_normal_73   Consumer_normal   40      136
+consumer_normal_74   Consumer_normal   40      137
+consumer_normal_75   Consumer_normal   40      138
+consumer_normal_76   Consumer_normal   70      145
+consumer_normal_77   Consumer_normal   70      146
+consumer_normal_78   Consumer_normal   70      147
+consumer_normal_79   Consumer_normal   70      148
+consumer_normal_80   Consumer_normal   70      149
+consumer_normal_81   Consumer_normal   70      150
+consumer_normal_82   Consumer_normal   110     135
+consumer_normal_83   Consumer_normal   110     136
+consumer_normal_84   Consumer_normal   110     137
+consumer_normal_85   Consumer_normal   110     138
+consumer_normal_86   Consumer_normal   110     139
+consumer_normal_87   Consumer_normal   110     140
+consumer_normal_88   Consumer_normal   110     141
+consumer_normal_89   Consumer_normal   110     142
+consumer_normal_90   Consumer_normal   120     105
+consumer_normal_91   Consumer_normal   120     106
+consumer_normal_92   Consumer_normal   120     107
+consumer_normal_93   Consumer_normal   120     108
+
+# Malicious Consumers (Matched 1:1, 94 nodes)
+# Site R0 (4 malicious)
+consumer_malicious_0    Consumer_malicious   135     14
+consumer_malicious_1    Consumer_malicious   135     15
+consumer_malicious_2    Consumer_malicious   135     16
+consumer_malicious_3    Consumer_malicious   135     17
+# Site R1 (6 malicious)
+consumer_malicious_4    Consumer_malicious   115     21
+consumer_malicious_5    Consumer_malicious   115     22
+consumer_malicious_6    Consumer_malicious   115     23
+consumer_malicious_7    Consumer_malicious   115     24
+consumer_malicious_8    Consumer_malicious   115     25
+consumer_malicious_9    Consumer_malicious   115     26
+# Site R3 (8 malicious)
+consumer_malicious_10   Consumer_malicious   50      21
+consumer_malicious_11   Consumer_malicious   50      22
+consumer_malicious_12   Consumer_malicious   50      23
+consumer_malicious_13   Consumer_malicious   50      24
+consumer_malicious_14   Consumer_malicious   50      25
+consumer_malicious_15   Consumer_malicious   50      26
+consumer_malicious_16   Consumer_malicious   50      12
+consumer_malicious_17   Consumer_malicious   50      13
+# Site R5 (4 malicious)
+consumer_malicious_18   Consumer_malicious   20      34
+consumer_malicious_19   Consumer_malicious   20      35
+consumer_malicious_20   Consumer_malicious   20      36
+consumer_malicious_21   Consumer_malicious   20      37
+# Site R6 (6 malicious)
+consumer_malicious_22   Consumer_malicious   95      26
+consumer_malicious_23   Consumer_malicious   95      27
+consumer_malicious_24   Consumer_malicious   95      28
+consumer_malicious_25   Consumer_malicious   95      29
+consumer_malicious_26   Consumer_malicious   95      30
+consumer_malicious_27   Consumer_malicious   95      31
+# Site R10 (8 malicious)
+consumer_malicious_28   Consumer_malicious   126     44
+consumer_malicious_29   Consumer_malicious   126     45
+consumer_malicious_30   Consumer_malicious   126     46
+consumer_malicious_31   Consumer_malicious   126     47
+consumer_malicious_32   Consumer_malicious   125     44
+consumer_malicious_33   Consumer_malicious   125     45
+consumer_malicious_34   Consumer_malicious   125     46
+consumer_malicious_35   Consumer_malicious   125     47
+# Site R8 (4 malicious)
+consumer_malicious_36   Consumer_malicious   65      39
+consumer_malicious_37   Consumer_malicious   65      40
+consumer_malicious_38   Consumer_malicious   65      41
+consumer_malicious_39   Consumer_malicious   65      42
+# Site R11 (6 malicious)
+consumer_malicious_40   Consumer_malicious   10      76
+consumer_malicious_41   Consumer_malicious   10      77
+consumer_malicious_42   Consumer_malicious   10      78
+consumer_malicious_43   Consumer_malicious   10      79
+consumer_malicious_44   Consumer_malicious   10      80
+consumer_malicious_45   Consumer_malicious   10      81
+# Site R12 (8 malicious)
+consumer_malicious_46   Consumer_malicious   30      88
+consumer_malicious_47   Consumer_malicious   30      89
+consumer_malicious_48   Consumer_malicious   30      90
+consumer_malicious_49   Consumer_malicious   30      91
+consumer_malicious_50   Consumer_malicious   30      92
+consumer_malicious_51   Consumer_malicious   30      93
+consumer_malicious_52   Consumer_malicious   30      94
+consumer_malicious_53   Consumer_malicious   30      95
+# Site R18 (4 malicious)
+consumer_malicious_54   Consumer_malicious   145     79
+consumer_malicious_55   Consumer_malicious   145     80
+consumer_malicious_56   Consumer_malicious   145     81
+consumer_malicious_57   Consumer_malicious   145     82
+# Site R16 (6 malicious - BELOW R16)
+consumer_malicious_58   Consumer_malicious   45      81
+consumer_malicious_59   Consumer_malicious   45      82
+consumer_malicious_60   Consumer_malicious   45      83
+consumer_malicious_61   Consumer_malicious   45      84
+consumer_malicious_62   Consumer_malicious   45      85
+consumer_malicious_63   Consumer_malicious   45      86
+# Site R21 (8 malicious)
+consumer_malicious_64   Consumer_malicious   10      113
+consumer_malicious_65   Consumer_malicious   10      114
+consumer_malicious_66   Consumer_malicious   10      115
+consumer_malicious_67   Consumer_malicious   10      116
+consumer_malicious_68   Consumer_malicious   10      117
+consumer_malicious_69   Consumer_malicious   10      118
+consumer_malicious_70   Consumer_malicious   10      119
+consumer_malicious_71   Consumer_malicious   10      120
+# Site R25 (4 malicious)
+consumer_malicious_72   Consumer_malicious   40      139
+consumer_malicious_73   Consumer_malicious   40      140
+consumer_malicious_74   Consumer_malicious   40      141
+consumer_malicious_75   Consumer_malicious   40      142
+# Site R29 (6 malicious)
+consumer_malicious_76   Consumer_malicious   70      151
+consumer_malicious_77   Consumer_malicious   70      152
+consumer_malicious_78   Consumer_malicious   70      153
+consumer_malicious_79   Consumer_malicious   70      154
+consumer_malicious_80   Consumer_malicious   70      155
+consumer_malicious_81   Consumer_malicious   70      156
+# Site R20 (8 malicious)
+consumer_malicious_82   Consumer_malicious   110     143
+consumer_malicious_83   Consumer_malicious   110     144
+consumer_malicious_84   Consumer_malicious   110     145
+consumer_malicious_85   Consumer_malicious   110     146
+consumer_malicious_86   Consumer_malicious   110     147
+consumer_malicious_87   Consumer_malicious   110     148
+consumer_malicious_88   Consumer_malicious   110     149
+consumer_malicious_89   Consumer_malicious   110     150
+# Site R22 (4 malicious)
+consumer_malicious_90   Consumer_malicious   120     109
+consumer_malicious_91   Consumer_malicious   120     110
+consumer_malicious_92   Consumer_malicious   120     111
+consumer_malicious_93   Consumer_malicious   120     112
+
+link
+# Core Links (Producer to Router)
+NodeR2               NodeP0          100Gbps  1  5ms   1000
+NodeR27              NodeP1          100Gbps  1  5ms   1000
+
+# Core Links (Router to Router - Updated List)
+# 0:9
+NodeR0               NodeR9          100Gbps  1  5ms   1000
+# 1:14
+NodeR1               NodeR14         100Gbps  1  5ms   1000
+# 2:9
+NodeR2               NodeR9          100Gbps  1  5ms   1000
+# 3:4
+NodeR3               NodeR4          100Gbps  1  5ms   1000
+# 4:15 7 17 24 9
+NodeR4               NodeR15         100Gbps  1  5ms   1000
+NodeR4               NodeR7          100Gbps  1  5ms   1000
+NodeR4               NodeR17         100Gbps  1  5ms   1000
+NodeR4               NodeR24         100Gbps  1  5ms   1000
+NodeR4               NodeR9          100Gbps  1  5ms   1000
+# 5:13
+NodeR5               NodeR13         100Gbps  1  5ms   1000
+# 6:7
+NodeR6               NodeR7          100Gbps  1  5ms   1000
+# 7:15 23 9
+NodeR7               NodeR15         100Gbps  1  5ms   1000
+NodeR7               NodeR23         100Gbps  1  5ms   1000
+NodeR7               NodeR9          100Gbps  1  5ms   1000
+# 8:9
+NodeR8               NodeR9          100Gbps  1  5ms   1000
+# 9:28 23 26 13
+NodeR9               NodeR28         100Gbps  1  5ms   1000
+NodeR9               NodeR23         100Gbps  1  5ms   1000
+NodeR9               NodeR26         100Gbps  1  5ms   1000
+NodeR9               NodeR13         100Gbps  1  5ms   1000
+# 10:15
+NodeR10              NodeR15         100Gbps  1  5ms   1000
+# 11:13
+NodeR11              NodeR13         100Gbps  1  5ms   1000
+# 12:13
+NodeR12              NodeR13         100Gbps  1  5ms   1000
+# 13:15 23 28 26
+NodeR13              NodeR15         100Gbps  1  5ms   1000
+NodeR13              NodeR23         100Gbps  1  5ms   1000
+NodeR13              NodeR28         100Gbps  1  5ms   1000
+NodeR13              NodeR26         100Gbps  1  5ms   1000
+# 14:15 19 22 28 23 24 26 17
+NodeR14              NodeR15         100Gbps  1  5ms   1000
+NodeR14              NodeR19         100Gbps  1  5ms   1000
+NodeR14              NodeR22         100Gbps  1  5ms   1000
+NodeR14              NodeR28         100Gbps  1  5ms   1000
+NodeR14              NodeR23         100Gbps  1  5ms   1000
+NodeR14              NodeR24         100Gbps  1  5ms   1000
+NodeR14              NodeR26         100Gbps  1  5ms   1000
+NodeR14              NodeR17         100Gbps  1  5ms   1000
+# 15:18 19
+NodeR15              NodeR18         100Gbps  1  5ms   1000
+NodeR15              NodeR19         100Gbps  1  5ms   1000
+# 16:24
+NodeR16              NodeR24         100Gbps  1  5ms   1000
+# 17:28 24
+NodeR17              NodeR28         100Gbps  1  5ms   1000
+NodeR17              NodeR24         100Gbps  1  5ms   1000
+# 19:23
+NodeR19              NodeR23         100Gbps  1  5ms   1000
+# 20:23
+NodeR20              NodeR23         100Gbps  1  5ms   1000
+# 21:26
+NodeR21              NodeR26         100Gbps  1  5ms   1000
+# 22:23 28
+NodeR22              NodeR23         100Gbps  1  5ms   1000
+NodeR22              NodeR28         100Gbps  1  5ms   1000
+# 23:29 24 28
+NodeR23              NodeR29         100Gbps  1  5ms   1000
+NodeR23              NodeR24         100Gbps  1  5ms   1000
+NodeR23              NodeR28         100Gbps  1  5ms   1000
+# 24:25 28 26
+NodeR24              NodeR25         100Gbps  1  5ms   1000
+NodeR24              NodeR28         100Gbps  1  5ms   1000
+NodeR24              NodeR26         100Gbps  1  5ms   1000
+# 27:28
+NodeR27              NodeR28         100Gbps  1  5ms   1000
+
+# Normal Consumer Links (Identical to A- version)
+consumer_normal_0    NodeR0          100Gbps  1  22ms  1000
+consumer_normal_1    NodeR0          100Gbps  1  14ms  1000
+consumer_normal_2    NodeR0          100Gbps  1  8ms   1000
+consumer_normal_3    NodeR0          100Gbps  1  29ms  1000
+consumer_normal_4    NodeR1          100Gbps  1  11ms  1000
+consumer_normal_5    NodeR1          100Gbps  1  26ms  1000
+consumer_normal_6    NodeR1          100Gbps  1  15ms  1000
+consumer_normal_7    NodeR1          100Gbps  1  18ms  1000
+consumer_normal_8    NodeR1          100Gbps  1  20ms  1000
+consumer_normal_9    NodeR1          100Gbps  1  13ms  1000
+consumer_normal_10   NodeR3          100Gbps  1  19ms  1000
+consumer_normal_11   NodeR3          100Gbps  1  25ms  1000
+consumer_normal_12   NodeR3          100Gbps  1  10ms  1000
+consumer_normal_13   NodeR3          100Gbps  1  28ms  1000
+consumer_normal_14   NodeR3          100Gbps  1  12ms  1000
+consumer_normal_15   NodeR3          100Gbps  1  22ms  1000
+consumer_normal_16   NodeR3          100Gbps  1  14ms  1000
+consumer_normal_17   NodeR3          100Gbps  1  18ms  1000
+consumer_normal_18   NodeR5          100Gbps  1  30ms  1000
+consumer_normal_19   NodeR5          100Gbps  1  11ms  1000
+consumer_normal_20   NodeR5          100Gbps  1  24ms  1000
+consumer_normal_21   NodeR5          100Gbps  1  9ms   1000
+consumer_normal_22   NodeR6          100Gbps  1  15ms  1000
+consumer_normal_23   NodeR6          100Gbps  1  21ms  1000
+consumer_normal_24   NodeR6          100Gbps  1  7ms   1000
+consumer_normal_25   NodeR6          100Gbps  1  23ms  1000
+consumer_normal_26   NodeR6          100Gbps  1  12ms  1000
+consumer_normal_27   NodeR6          100Gbps  1  19ms  1000
+consumer_normal_28   NodeR10         100Gbps  1  16ms  1000
+consumer_normal_29   NodeR10         100Gbps  1  30ms  1000
+consumer_normal_30   NodeR10         100Gbps  1  25ms  1000
+consumer_normal_31   NodeR10         100Gbps  1  11ms  1000
+consumer_normal_32   NodeR10         100Gbps  1  17ms  1000
+consumer_normal_33   NodeR10         100Gbps  1  22ms  1000
+consumer_normal_34   NodeR10         100Gbps  1  10ms  1000
+consumer_normal_35   NodeR10         100Gbps  1  28ms  1000
+consumer_normal_36   NodeR8          100Gbps  1  14ms  1000
+consumer_normal_37   NodeR8          100Gbps  1  21ms  1000
+consumer_normal_38   NodeR8          100Gbps  1  29ms  1000
+consumer_normal_39   NodeR8          100Gbps  1  12ms  1000
+consumer_normal_40   NodeR11         100Gbps  1  15ms  1000
+consumer_normal_41   NodeR11         100Gbps  1  20ms  1000
+consumer_normal_42   NodeR11         100Gbps  1  14ms  1000
+consumer_normal_43   NodeR11         100Gbps  1  26ms  1000
+consumer_normal_44   NodeR11         100Gbps  1  18ms  1000
+consumer_normal_45   NodeR11         100Gbps  1  30ms  1000
+consumer_normal_46   NodeR12         100Gbps  1  11ms  1000
+consumer_normal_47   NodeR12         100Gbps  1  17ms  1000
+consumer_normal_48   NodeR12         100Gbps  1  25ms  1000
+consumer_normal_49   NodeR12         100Gbps  1  29ms  1000
+consumer_normal_50   NodeR12         100Gbps  1  13ms  1000
+consumer_normal_51   NodeR12         100Gbps  1  22ms  1000
+consumer_normal_52   NodeR12         100Gbps  1  16ms  1000
+consumer_normal_53   NodeR12         100Gbps  1  10ms  1000
+consumer_normal_54   NodeR18         100Gbps  1  24ms  1000
+consumer_normal_55   NodeR18         100Gbps  1  12ms  1000
+consumer_normal_56   NodeR18         100Gbps  1  19ms  1000
+consumer_normal_57   NodeR18         100Gbps  1  28ms  1000
+consumer_normal_58   NodeR16         100Gbps  1  11ms  1000
+consumer_normal_59   NodeR16         100Gbps  1  30ms  1000
+consumer_normal_60   NodeR16         100Gbps  1  25ms  1000
+consumer_normal_61   NodeR16         100Gbps  1  14ms  1000
+consumer_normal_62   NodeR16         100Gbps  1  18ms  1000
+consumer_normal_63   NodeR16         100Gbps  1  22ms  1000
+consumer_normal_64   NodeR21         100Gbps  1  15ms  1000
+consumer_normal_65   NodeR21         100Gbps  1  11ms  1000
+consumer_normal_66   NodeR21         100Gbps  1  27ms  1000
+consumer_normal_67   NodeR21         100Gbps  1  23ms  1000
+consumer_normal_68   NodeR21         100Gbps  1  19ms  1000
+consumer_normal_69   NodeR21         100Gbps  1  10ms  1000
+consumer_normal_70   NodeR21         100Gbps  1  26ms  1000
+consumer_normal_71   NodeR21         100Gbps  1  14ms  1000
+consumer_normal_72   NodeR25         100Gbps  1  28ms  1000
+consumer_normal_73   NodeR25         100Gbps  1  12ms  1000
+consumer_normal_74   NodeR25         100Gbps  1  17ms  1000
+consumer_normal_75   NodeR25         100Gbps  1  20ms  1000
+consumer_normal_76   NodeR29         100Gbps  1  25ms  1000
+consumer_normal_77   NodeR29         100Gbps  1  11ms  1000
+consumer_normal_78   NodeR29         100Gbps  1  30ms  1000
+consumer_normal_79   NodeR29         100Gbps  1  14ms  1000
+consumer_normal_80   NodeR29         100Gbps  1  18ms  1000
+consumer_normal_81   NodeR29         100Gbps  1  22ms  1000
+consumer_normal_82   NodeR20         100Gbps  1  16ms  1000
+consumer_normal_83   NodeR20         100Gbps  1  28ms  1000
+consumer_normal_84   NodeR20         100Gbps  1  12ms  1000
+consumer_normal_85   NodeR20         100Gbps  1  10ms  1000
+consumer_normal_86   NodeR20         100Gbps  1  24ms  1000
+consumer_normal_87   NodeR20         100Gbps  1  19ms  1000
+consumer_normal_88   NodeR20         100Gbps  1  11ms  1000
+consumer_normal_89   NodeR20         100Gbps  1  27ms  1000
+consumer_normal_90   NodeR22         100Gbps  1  13ms  1000
+consumer_normal_91   NodeR22         100Gbps  1  22ms  1000
+consumer_normal_92   NodeR22         100Gbps  1  15ms  1000
+consumer_normal_93   NodeR22         100Gbps  1  18ms  1000
+
+# Malicious Consumer Links (1:1 Ratio, 5-30ms)
+consumer_malicious_0    NodeR0          100Gbps  1  12ms  1000
+consumer_malicious_1    NodeR0          100Gbps  1  28ms  1000
+consumer_malicious_2    NodeR0          100Gbps  1  7ms   1000
+consumer_malicious_3    NodeR0          100Gbps  1  22ms  1000
+consumer_malicious_4    NodeR1          100Gbps  1  14ms  1000
+consumer_malicious_5    NodeR1          100Gbps  1  26ms  1000
+consumer_malicious_6    NodeR1          100Gbps  1  11ms  1000
+consumer_malicious_7    NodeR1          100Gbps  1  19ms  1000
+consumer_malicious_8    NodeR1          100Gbps  1  23ms  1000
+consumer_malicious_9    NodeR1          100Gbps  1  27ms  1000
+consumer_malicious_10   NodeR3          100Gbps  1  15ms  1000
+consumer_malicious_11   NodeR3          100Gbps  1  11ms  1000
+consumer_malicious_12   NodeR3          100Gbps  1  30ms  1000
+consumer_malicious_13   NodeR3          100Gbps  1  12ms  1000
+consumer_malicious_14   NodeR3          100Gbps  1  22ms  1000
+consumer_malicious_15   NodeR3          100Gbps  1  18ms  1000
+consumer_malicious_16   NodeR3          100Gbps  1  24ms  1000
+consumer_malicious_17   NodeR3          100Gbps  1  8ms   1000
+consumer_malicious_18   NodeR5          100Gbps  1  20ms  1000
+consumer_malicious_19   NodeR5          100Gbps  1  14ms  1000
+consumer_malicious_20   NodeR5          100Gbps  1  28ms  1000
+consumer_malicious_21   NodeR5          100Gbps  1  12ms  1000
+consumer_malicious_22   NodeR6          100Gbps  1  15ms  1000
+consumer_malicious_23   NodeR6          100Gbps  1  25ms  1000
+consumer_malicious_24   NodeR6          100Gbps  1  13ms  1000
+consumer_malicious_25   NodeR6          100Gbps  1  16ms  1000
+consumer_malicious_26   NodeR6          100Gbps  1  25ms  1000
+consumer_malicious_27   NodeR6          100Gbps  1  22ms  1000
+consumer_malicious_28   NodeR10         100Gbps  1  30ms  1000
+consumer_malicious_29   NodeR10         100Gbps  1  11ms  1000
+consumer_malicious_30   NodeR10         100Gbps  1  17ms  1000
+consumer_malicious_31   NodeR10         100Gbps  1  23ms  1000
+consumer_malicious_32   NodeR10         100Gbps  1  13ms  1000
+consumer_malicious_33   NodeR10         100Gbps  1  26ms  1000
+consumer_malicious_34   NodeR10         100Gbps  1  19ms  1000
+consumer_malicious_35   NodeR10         100Gbps  1  15ms  1000
+consumer_malicious_36   NodeR8          100Gbps  1  14ms  1000
+consumer_malicious_37   NodeR8          100Gbps  1  21ms  1000
+consumer_malicious_38   NodeR8          100Gbps  1  29ms  1000
+consumer_malicious_39   NodeR8          100Gbps  1  12ms  1000
+consumer_malicious_40   NodeR11         100Gbps  1  15ms  1000
+consumer_malicious_41   NodeR11         100Gbps  1  20ms  1000
+consumer_malicious_42   NodeR11         100Gbps  1  14ms  1000
+consumer_malicious_43   NodeR11         100Gbps  1  26ms  1000
+consumer_malicious_44   NodeR11         100Gbps  1  18ms  1000
+consumer_malicious_45   NodeR11         100Gbps  1  30ms  1000
+consumer_malicious_46   NodeR12         100Gbps  1  11ms  1000
+consumer_malicious_47   NodeR12         100Gbps  1  17ms  1000
+consumer_malicious_48   NodeR12         100Gbps  1  25ms  1000
+consumer_malicious_49   NodeR12         100Gbps  1  29ms  1000
+consumer_malicious_50   NodeR12         100Gbps  1  13ms  1000
+consumer_malicious_51   NodeR12         100Gbps  1  22ms  1000
+consumer_malicious_52   NodeR12         100Gbps  1  16ms  1000
+consumer_malicious_53   NodeR12         100Gbps  1  10ms  1000
+consumer_malicious_54   NodeR18         100Gbps  1  14ms  1000
+consumer_malicious_55   NodeR18         100Gbps  1  22ms  1000
+consumer_malicious_56   NodeR18         100Gbps  1  15ms  1000
+consumer_malicious_57   NodeR18         100Gbps  1  18ms  1000
+consumer_malicious_58   NodeR16         100Gbps  1  11ms  1000
+consumer_malicious_59   NodeR16         100Gbps  1  30ms  1000
+consumer_malicious_60   NodeR16         100Gbps  1  25ms  1000
+consumer_malicious_61   NodeR16         100Gbps  1  14ms  1000
+consumer_malicious_62   NodeR16         100Gbps  1  18ms  1000
+consumer_malicious_63   NodeR16         100Gbps  1  22ms  1000
+consumer_malicious_64   NodeR21         100Gbps  1  15ms  1000
+consumer_malicious_65   NodeR21         100Gbps  1  11ms  1000
+consumer_malicious_66   NodeR21         100Gbps  1  27ms  1000
+consumer_malicious_67   NodeR21         100Gbps  1  23ms  1000
+consumer_malicious_68   NodeR21         100Gbps  1  19ms  1000
+consumer_malicious_69   NodeR21         100Gbps  1  10ms  1000
+consumer_malicious_70   NodeR21         100Gbps  1  26ms  1000
+consumer_malicious_71   NodeR21         100Gbps  1  14ms  1000
+consumer_malicious_72   NodeR25         100Gbps  1  28ms  1000
+consumer_malicious_73   NodeR25         100Gbps  1  12ms  1000
+consumer_malicious_74   NodeR25         100Gbps  1  17ms  1000
+consumer_malicious_75   NodeR25         100Gbps  1  20ms  1000
+consumer_malicious_76   NodeR29         100Gbps  1  25ms  1000
+consumer_malicious_77   NodeR29         100Gbps  1  11ms  1000
+consumer_malicious_78   NodeR29         100Gbps  1  30ms  1000
+consumer_malicious_79   NodeR29         100Gbps  1  14ms  1000
+consumer_malicious_80   NodeR29         100Gbps  1  18ms  1000
+consumer_malicious_81   NodeR29         100Gbps  1  22ms  1000
+consumer_malicious_82   NodeR20         100Gbps  1  16ms  1000
+consumer_malicious_83   NodeR20         100Gbps  1  28ms  1000
+consumer_malicious_84   NodeR20         100Gbps  1  12ms  1000
+consumer_malicious_85   NodeR20         100Gbps  1  10ms  1000
+consumer_malicious_86   NodeR20         100Gbps  1  24ms  1000
+consumer_malicious_87   NodeR20         100Gbps  1  19ms  1000
+consumer_malicious_88   NodeR20         100Gbps  1  11ms  1000
+consumer_malicious_89   NodeR20         100Gbps  1  27ms  1000
+consumer_malicious_90   NodeR22         100Gbps  1  13ms  1000
+consumer_malicious_91   NodeR22         100Gbps  1  22ms  1000
+consumer_malicious_92   NodeR22         100Gbps  1  15ms  1000
+consumer_malicious_93   NodeR22         100Gbps  1  18ms  1000

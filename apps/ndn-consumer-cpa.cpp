@@ -67,7 +67,6 @@
  
  ConsumerCPA::ConsumerCPA()
    : ConsumerCbr()
-   , m_initial(true)
    , m_vNow(0)
  {
  }
